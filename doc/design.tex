@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{minted}
+
+\title{ECE 421 Project 3 Design}
+\author{
+  Mackenzie Malainey\\
+  \texttt{mmalaine@ualberta.ca}
+  \and
+  Lora Ma\\
+  \texttt{lora@ualberta.ca}
+  \and
+  Benjamin Kong\\
+  \texttt{bkong@ualberta.ca}
+}
+\date{April 2022}
+
+\begin{document}
+
+\begin{titlepage}
+    \maketitle
+    \tableofcontents
+\end{titlepage}
+
+\section{Backend API}
+
+\subsection{REST Endpoints}
+
+\subsubsection{User Authentication}
+
+\mint{http}|/auth/login//|
+\mint{http}|/auth/logout/|
+\mint{http}|/auth/register/|
+
+\subsubsection{Game Records}
+
+\mint{http}|/games/:gameid/record/|
+\mint{http}|/games/:gameid/records/|
+
+\end{document}

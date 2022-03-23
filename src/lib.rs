@@ -1,5 +1,5 @@
 // Yew wasm-pack setup referenced from https://github.com/yewstack/yew-wasm-pack-minimal
-mod app;
+mod client;
 
 use wasm_bindgen::prelude::*;
 

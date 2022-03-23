@@ -1,0 +1,1 @@
+CREATE TABLE debug_db_exists (log_time INTEGER, tag TEXT);

@@ -16,8 +16,8 @@ This command will build the WebAssembly target and bundle it in the `pkg/` direc
 
 This command will bundle the WebAssembly with the entry point function defined in `main.js`
 
-`rollup ./main.js --format iife --file ./pkg/bundle.js`
+`rollup ./app/main.js --format iife --file ./pkg/bundle.js`
 
 ### 4) Launch Server
 
-`cargo run --bin project3`
+`cargo run --bin server`

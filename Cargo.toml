@@ -10,9 +10,14 @@ wasm-bindgen = "^0.2"
 yew = "0.19"
 
 [target.'cfg(not(target_family="wasm"))'.dependencies]
-rocket = "0.4.4"
-rocket_contrib = "0.4.10"
+rocket = { version = "0.5.0-rc.1", features = ["secrets"] }
+rocket_sync_db_pools = { version = "0.1.0-rc.1", default-features = false, features = ["sqlite_pool"] }
+rusqlite = { version = "0.25.4", features = ["bundled"] }
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
 
 [lib]
-path = "src/client.rs"
+path = "src/lib.rs"
 crate-type = ["cdylib"]
