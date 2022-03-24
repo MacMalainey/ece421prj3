@@ -1,5 +1,5 @@
 [global.databases]
-user_database = { url = "./localdb.db" }
+user_database = { url = "./localdev.db" }
 
 [debug]
 secret_key = "Rz0DCoRZ07WM8pUWNzpWbi9tR0tFEDH9JLVCZoOvPTY="

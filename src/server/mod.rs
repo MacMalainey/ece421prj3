@@ -1,7 +1,9 @@
 mod models;
-mod user;
+mod routes;
+mod schema;
+mod forms;
 pub mod database;
 
-pub fn api_routes() -> Vec<rocket::Route> {
-    user::user_routes()
+pub fn get_routes() -> Vec<rocket::Route> {
+    routes::get_routes()
 }

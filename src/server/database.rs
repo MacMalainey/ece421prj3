@@ -1,4 +1,4 @@
-use rocket_sync_db_pools::{rusqlite, database};
+use rocket_sync_db_pools::{diesel, database};
 
 #[database("user_database")]
-pub struct UserDbConn(rusqlite::Connection);
+pub struct UserDbConn(diesel::SqliteConnection);
