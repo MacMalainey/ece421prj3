@@ -1,7 +1,7 @@
 mod models;
 mod routes;
 mod schema;
-mod forms;
+mod requests;
 pub mod database;
 
 pub fn get_routes() -> Vec<rocket::Route> {

@@ -1,11 +1,12 @@
 use rocket::http::{Cookie, CookieJar, Status};
+use rocket::serde::json::Json;
 use rocket::form::Form;
 
 use diesel::prelude::*;
 
 use super::database::UserDbConn;
 use super::models::*;
-use super::forms::*;
+use super::requests::*;
 
 #[post("/user/login", data="<auth>")]
 async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
@@ -17,7 +18,7 @@ async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJa
             Ok(Some(user)) => {
                 match user.compare(&auth.password) {
                     Ok(true) => {
-                        (Status::Ok, Some(Cookie::build("user_id", user.user_id).finish()))
+                        (Status::Ok, Some(Cookie::build("user_auth_token", user.user_id).finish()))
                     },
                     Ok(false) => {
                         (Status::Unauthorized, None)
@@ -47,7 +48,7 @@ async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJa
 
 #[post("/user/logout")]
 fn user_logout(cookies: &CookieJar<'_>) -> Status {
-    cookies.remove_private(Cookie::named("user_id"));
+    cookies.remove_private(Cookie::named("user_auth_token"));
     Status::Ok
 }
 
@@ -64,7 +65,7 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
             let (status, auth_cookie) = db.run(move |c| {
                 match user.insert_into(users).execute(c) {
                     Ok(_) => {
-                        (Status::Ok, Some(Cookie::build("user_id", uid).finish()))
+                        (Status::Ok, Some(Cookie::build("user_auth_token", uid).finish()))
                     },
                     Err(DatabaseError(DatabaseErrorKind::UniqueViolation, _)) => (Status::Unauthorized, None),
                     Err(err) => {
@@ -88,6 +89,44 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 
 }
 
+#[get("/user/records?<limit>&<offset>")]
+async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecordModel>>, Status> {
+    use super::schema::match_records::dsl::*;
+
+    db.run(move |c| {
+        match_records
+            .filter(user_id.eq(auth.unwrap_token()))
+            .order_by(start_time)
+            .limit(limit.unwrap_or(10))
+            .offset(offset.unwrap_or(0)).load::<MatchRecordModel>(c)
+    }).await
+        .map(|data| Json(data))
+        .map_err(|err| {
+            eprintln!("{:?}", err);
+            Status::InternalServerError
+        }
+    )
+}
+
+// #[post("/user/records/add", format = "json", data = "<record>",)]
+// async fn user_record_add(db: UserDbConn, record: UserAuthToken) -> Result<Json<Vec<MatchRecordModel>>, Status> {
+//     use super::schema::match_records::dsl::*;
+
+//     db.run(move |c| {
+//         match_records
+//             .filter(user_id.eq(auth.unwrap_token()))
+//             .order_by(start_time)
+//             .limit(limit.unwrap_or(10))
+//             .offset(offset.unwrap_or(0)).load::<MatchRecordModel>(c)
+//     }).await
+//         .map(|data| Json(data))
+//         .map_err(|err| {
+//             eprintln!("{:?}", err);
+//             Status::InternalServerError
+//         }
+//     )
+// }
+
 pub fn get_routes() -> Vec<rocket::Route> {
-    routes![user_login, user_logout, user_register]
+    routes![user_login, user_logout, user_register, user_records]
 }
