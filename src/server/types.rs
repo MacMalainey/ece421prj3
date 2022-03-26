@@ -7,7 +7,7 @@ use rocket::serde::Deserialize;
 
 use std::io::Write;
 
-#[derive(Debug, Clone, Copy, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
 #[serde(crate = "rocket::serde")]
 #[sql_type = "Integer"]
 pub enum GameType {
@@ -39,7 +39,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
 #[serde(crate = "rocket::serde")]
 #[sql_type = "Integer"]
 pub enum CpuLevel {
@@ -73,7 +73,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Eq, Copy, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
 #[serde(crate = "rocket::serde")]
 #[sql_type = "Integer"]
 pub enum MatchResult {
@@ -105,4 +105,17 @@ where
             x => Err(format!("Unrecognized MatchResult variant {}", x).into()),
         }
     }
+}
+
+#[derive(FromFormField)]
+pub enum MatchQuerySortBy {
+    StartTime,
+    Duration,
+}
+
+#[derive(FromForm)]
+pub struct MatchQueryFilter {
+    pub result: Vec<MatchResult>,
+    pub game: Vec<GameType>,
+    pub level: Vec<CpuLevel>
 }
