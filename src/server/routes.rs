@@ -108,25 +108,35 @@ async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, o
     )
 }
 
-// #[post("/user/records/add", format = "json", data = "<record>",)]
-// async fn user_record_add(db: UserDbConn, record: UserAuthToken) -> Result<Json<Vec<MatchRecordModel>>, Status> {
-//     use super::schema::match_records::dsl::*;
+#[post("/user/records/add", format = "json", data = "<record>",)]
+async fn user_record_add(db: UserDbConn, record: Json<MatchClientRecord>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
+    use super::schema::match_records::dsl::*;
+    use diesel::result::Error::DatabaseError;
+    use diesel::result::DatabaseErrorKind;
 
-//     db.run(move |c| {
-//         match_records
-//             .filter(user_id.eq(auth.unwrap_token()))
-//             .order_by(start_time)
-//             .limit(limit.unwrap_or(10))
-//             .offset(offset.unwrap_or(0)).load::<MatchRecordModel>(c)
-//     }).await
-//         .map(|data| Json(data))
-//         .map_err(|err| {
-//             eprintln!("{:?}", err);
-//             Status::InternalServerError
-//         }
-//     )
-// }
+    let match_record = MatchRecordModel::new_from_client(auth_token, record.into_inner());
+
+    match db.run(move |c| {
+        match_record.insert_into(match_records).execute(c)
+    }).await {
+        Ok(_) => Status::Ok,
+        Err(DatabaseError(DatabaseErrorKind::ForeignKeyViolation, _)) => {
+            // We encountered a user that doesn't actually exist
+            cookies.remove_private(Cookie::named("user_auth_token"));
+            Status::Unauthorized
+        },
+        Err(_) => {
+            Status::InternalServerError
+        }
+    }
+}
 
 pub fn get_routes() -> Vec<rocket::Route> {
-    routes![user_login, user_logout, user_register, user_records]
+    routes![
+        user_login,
+        user_logout,
+        user_register,
+        user_records,
+        user_record_add
+    ]
 }
