@@ -303,6 +303,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossterm"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c85525306c4291d1b73ce93c8acf9c339f9b213aef6c1d85c3830cbf1c16325c"
+dependencies = [
+ "bitflags",
+ "crossterm_winapi",
+ "libc",
+ "mio 0.7.14",
+ "parking_lot",
+ "signal-hook",
+ "signal-hook-mio",
+ "winapi",
+]
+
+[[package]]
+name = "crossterm_winapi"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ae1b35a484aa10e07fe0638d02301c5ad24de82d310ccbd2f3693da5f09bf1c"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
 name = "crypto-mac"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -953,6 +978,19 @@ checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
 name = "mio"
+version = "0.7.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8067b404fe97c70829f082dec8bcf4f71225d7eaea1d8645349cb76fa06205cc"
+dependencies = [
+ "libc",
+ "log",
+ "miow",
+ "ntapi",
+ "winapi",
+]
+
+[[package]]
+name = "mio"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52da4364ffb0e4fe33a9841a98a3f3014fb964045ce4f7a45a398243c8d6b0c9"
@@ -1137,7 +1175,9 @@ checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
 name = "prj3_cli"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "shared_types",
+ "terminal-menu",
 ]
 
 [[package]]
@@ -1154,7 +1194,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "diesel",
- "itertools",
  "rand",
  "rocket",
  "rocket_sync_db_pools",
@@ -1582,10 +1621,32 @@ dependencies = [
  "chrono",
  "diesel",
  "diesel_migrations",
+ "itertools",
  "rand",
  "rocket",
  "rust-argon2",
  "serde",
+]
+
+[[package]]
+name = "signal-hook"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "647c97df271007dcea485bb74ffdb57f2e683f1306c854f468a0c244badabf2d"
+dependencies = [
+ "libc",
+ "signal-hook-registry",
+]
+
+[[package]]
+name = "signal-hook-mio"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29ad2e15f37ec9a6cc544097b78a1ec90001e9f71b81338ca39f430adaca99af"
+dependencies = [
+ "libc",
+ "mio 0.7.14",
+ "signal-hook",
 ]
 
 [[package]]
@@ -1733,6 +1794,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "terminal-menu"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "077aa6b270bedb4bc19227e4f4cf877ad1a2fe0b0325f2af09b1c9b535ba1776"
+dependencies = [
+ "crossterm",
+ "lazy_static",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1819,7 +1890,7 @@ dependencies = [
  "bytes",
  "libc",
  "memchr",
- "mio",
+ "mio 0.8.2",
  "num_cpus",
  "once_cell",
  "pin-project-lite",

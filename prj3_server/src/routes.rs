@@ -3,23 +3,18 @@ use rocket::form::Form;
 
 use rocket::serde::json::Json;
 
-use diesel::prelude::*;
-
-use chrono::NaiveDateTime;
-
 use super::UserDbConn;
 use super::forms::*;
 
 use shared_types::models::{UserModel, MatchRecordModel};
 use shared_types::types::*;
+use shared_types::queries::*;
 
 #[post("/user/login", data="<auth>")]
 async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
 
-    use shared_types::schema::users::dsl::*;
-
     let (status, auth_cookie) = db.run(move |c| {
-        match users.find(&auth.user_id).first::<UserModel>(c).optional() {
+        match users::find_by_id(c, &auth.user_id) {
             Ok(Some(user)) => {
                 match user.compare(&auth.password) {
                     Ok(true) => {
@@ -59,7 +54,6 @@ fn user_logout(cookies: &CookieJar<'_>, _auth: UserAuthToken) -> Status {
 
 #[post("/user/register", data="<auth>")]
 async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
-    use shared_types::schema::users::dsl::*;
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
@@ -69,7 +63,7 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
     match UserModel::generate_new(auth.user_id, auth.password) {
         Ok(user) => {
             let (status, auth_cookie) = db.run(move |c| {
-                match user.insert_into(users).execute(c) {
+                match users::register_new(c, user) {
                     Ok(_) => {
                         (Status::Ok, Some(Cookie::build("user_auth_token", uid).finish()))
                     },
@@ -97,14 +91,13 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 
 #[get("/user/records?<limit>&<offset>")]
 async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecordModel>>, Status> {
-    use shared_types::schema::match_records::dsl::*;
-
     db.run(move |c| {
-        match_records
-            .filter(user_id.eq(auth.unwrap_token()))
-            .order_by(start_time.desc())
-            .limit(limit.unwrap_or(10))
-            .offset(offset.unwrap_or(0)).load::<MatchRecordModel>(c)
+        match_records::find_by_user(
+            c,
+            &auth.unwrap_token(),
+            limit.unwrap_or(10),
+            offset.unwrap_or(0)
+        )
     }).await
         .map(|data| Json(data))
         .map_err(|err| {
@@ -116,14 +109,13 @@ async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, o
 
 #[post("/user/records/add", format = "json", data = "<record>",)]
 async fn user_record_add(db: UserDbConn, record: Json<MatchClientRecord>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
-    use shared_types::schema::match_records::dsl::*;
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
     let match_record = MatchRecordModel::new_from_client(auth_token, record.into_inner());
 
     match db.run(move |c| {
-        match_record.insert_into(match_records).execute(c)
+        match_records::add(c, match_record)
     }).await {
         Ok(_) => Status::Ok,
         Err(DatabaseError(DatabaseErrorKind::ForeignKeyViolation, _)) => {
@@ -148,55 +140,26 @@ async fn game_records(
     asc: Option<bool>,
     filter: Option<MatchQueryFilter>
 ) -> Result<Json<Vec<MatchRecordModel>>, Status> {
-    use shared_types::schema::match_records::dsl::*;
-    use itertools::Itertools;
+
+    let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
+    let asc = asc.unwrap_or_else(|| {
+        match sort_by {
+            MatchQuerySortBy::StartTime => false,
+            MatchQuerySortBy::Duration => true
+        }
+    });
 
     db.run(move |c| {
-        let mut query = match_records.into_boxed::<diesel::sqlite::Sqlite>();
-
-        if let Some(filters) = filter {
-            let result_filters: Vec<MatchResult> = filters.result.iter().unique().cloned().collect();
-            if result_filters.len() > 0 {
-                query = query.filter(result.eq_any(result_filters));
-            }
-
-            let game_filters: Vec<GameType> = filters.game.iter().unique().cloned().collect();
-            if game_filters.len() > 0 {
-                query = query.filter(game_id.eq_any(game_filters));
-            }
-
-            let level_filters: Vec<CpuLevel> = filters.level.iter().unique().cloned().collect();
-            if level_filters.len() > 0 {
-                query = query.filter(cpu_level.eq_any(level_filters));
-            }
-        }
-
-        if let Some(before_ts) = before {
-            query = query.filter(start_time.lt(NaiveDateTime::from_timestamp(before_ts, 0)));
-        }
-
-        if let Some(after_ts) = after {
-            query = query.filter(start_time.gt(NaiveDateTime::from_timestamp(after_ts, 0)));
-        }
-
-        query = match sort_by.unwrap_or(MatchQuerySortBy::StartTime) {
-            MatchQuerySortBy::StartTime =>
-                if asc.unwrap_or(false) {
-                    query.order(start_time.asc())
-                } else {
-                    query.order(start_time.desc())
-                },
-            MatchQuerySortBy::Duration =>
-                if asc.unwrap_or(true) {
-                    query.order((duration.asc(), start_time.desc()))
-                } else {
-                    query.order((duration.desc(), start_time.desc()))
-                }
-        };
-
-        query = query.limit(limit.unwrap_or(10)).offset(offset.unwrap_or(0));
-
-        query.load::<MatchRecordModel>(c)
+        match_records::get(
+            c,
+            filter,
+            sort_by,
+            asc,
+            before,
+            after,
+            limit.unwrap_or(10),
+            offset.unwrap_or(0)
+        )
     }).await
         .map(|data| Json(data))
         .map_err(|err| {
