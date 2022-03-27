@@ -1,20 +1,22 @@
 use rocket::http::{Cookie, CookieJar, Status};
-use rocket::serde::json::Json;
 use rocket::form::Form;
+
+use rocket::serde::json::Json;
 
 use diesel::prelude::*;
 
 use chrono::NaiveDateTime;
 
-use super::database::UserDbConn;
-use super::models::*;
-use super::requests::*;
-use super::types::*;
+use super::UserDbConn;
+use super::forms::*;
+
+use shared_types::models::{UserModel, MatchRecordModel};
+use shared_types::types::*;
 
 #[post("/user/login", data="<auth>")]
 async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
 
-    use super::schema::users::dsl::*;
+    use shared_types::schema::users::dsl::*;
 
     let (status, auth_cookie) = db.run(move |c| {
         match users.find(&auth.user_id).first::<UserModel>(c).optional() {
@@ -57,13 +59,14 @@ fn user_logout(cookies: &CookieJar<'_>, _auth: UserAuthToken) -> Status {
 
 #[post("/user/register", data="<auth>")]
 async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
-    use super::schema::users::dsl::*;
+    use shared_types::schema::users::dsl::*;
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
     let uid = auth.user_id.clone();
+    let auth = auth.into_inner();
 
-    match UserModel::new_from_form(auth.into_inner()) {
+    match UserModel::generate_new(auth.user_id, auth.password) {
         Ok(user) => {
             let (status, auth_cookie) = db.run(move |c| {
                 match user.insert_into(users).execute(c) {
@@ -94,7 +97,7 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 
 #[get("/user/records?<limit>&<offset>")]
 async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecordModel>>, Status> {
-    use super::schema::match_records::dsl::*;
+    use shared_types::schema::match_records::dsl::*;
 
     db.run(move |c| {
         match_records
@@ -113,7 +116,7 @@ async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, o
 
 #[post("/user/records/add", format = "json", data = "<record>",)]
 async fn user_record_add(db: UserDbConn, record: Json<MatchClientRecord>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
-    use super::schema::match_records::dsl::*;
+    use shared_types::schema::match_records::dsl::*;
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
@@ -145,7 +148,7 @@ async fn game_records(
     asc: Option<bool>,
     filter: Option<MatchQueryFilter>
 ) -> Result<Json<Vec<MatchRecordModel>>, Status> {
-    use super::schema::match_records::dsl::*;
+    use shared_types::schema::match_records::dsl::*;
     use itertools::Itertools;
 
     db.run(move |c| {

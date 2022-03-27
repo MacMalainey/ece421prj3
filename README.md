@@ -1,23 +1,54 @@
 # ECE421 Project 3
 
-## Run Locally
+## Run Client Locally
 
-### 1) Install `wasm-pack`
+### 1) Install WebAssembly Target
 
-Install by running `cargo install wasm-pack`
+```sh
+rustup target add wasm32-unknown-unknown
+```
 
-### 2) Build WebAssembly
+### 2) Install Trunk
 
-This command will build the WebAssembly target and bundle it in the `pkg/` directory
+Trunk is the tool used for managing deployment and packaging
 
-`wasm-pack build --target web`
+```sh
+# note that this might take a while to install, because it compiles everything from scratch
+# Trunk also provides prebuilt binaries for a number of major package managers
+# See https://trunkrs.dev/#install for further details
+cargo install trunk
+cargo install wasm-bindgen-cli
+```
 
-### 3) Bundle JavaScript
+### 3) Launch Local Development Web Server
 
-This command will bundle the WebAssembly with the entry point function defined in `main.js`
+```sh
+trunk serve
+```
 
-`rollup ./app/main.js --format iife --file ./pkg/bundle.js`
+## Run Server Locally
 
-### 4) Launch Server
+### 1) Install SQLite3
 
-`cargo run --bin server`
+Using whatever method you prefer for your OS
+(make sure it is in your PATH)
+
+### 2) Launch Local Server
+
+```sh
+cargo run -p prj3_server
+```
+
+## Run CLI
+
+### 1) Install SQLite3 (see run server locally)
+
+### 2) Run CLI
+
+```sh
+cargo run -p prj3_cli
+```
+
+## Perform Database Changes
+
+Database changes are performed using the Diesel CLI visit the Diesel [Getting Started](https://diesel.rs/guides/getting-started.html) guide for information on installing the Diesel CLI and creating/performing migrations

@@ -1,11 +1,10 @@
 use super::schema::*;
-use super::requests::*;
 use super::types::*;
 
 use chrono::NaiveDateTime;
 use chrono::naive::serde::ts_seconds;
 
-use rocket::serde::Serialize;
+use serde::Serialize;
 
 #[derive(Debug, Identifiable, Queryable, Insertable)]
 #[table_name = "users"]
@@ -17,19 +16,19 @@ pub struct UserModel {
 
 impl UserModel {
 
-    pub fn new_from_form(form: UserAuthForm) -> Result<Self, argon2::Error> {
+    pub fn generate_new(user_id: String, raw_password: String) -> Result<Self, argon2::Error> {
         // Generate password salt
         use rand::Rng;
         let mut rng = rand::thread_rng();
-        let mut salt = vec![0u8; form.user_id.len() + form.password.len()];
+        let mut salt = vec![0u8; user_id.len() + raw_password.len()];
         salt.iter_mut().for_each(|val| *val = rng.gen());
 
         // Generate password hash
-        let pwd_hash = argon2::hash_encoded(&form.password.as_bytes(), &salt, &argon2::Config::default())?;
+        let pwd_hash = argon2::hash_encoded(&raw_password.as_bytes(), &salt, &argon2::Config::default())?;
 
         // Return model
         Ok(UserModel {
-            user_id: form.user_id,
+            user_id: user_id,
             password: pwd_hash
         })
     }
@@ -41,7 +40,6 @@ impl UserModel {
 }
 
 #[derive(Debug, Queryable, Insertable, Serialize)]
-#[serde(crate = "rocket::serde")]
 #[table_name = "match_records"]
 pub struct MatchRecordModel {
     id: Option<i32>,

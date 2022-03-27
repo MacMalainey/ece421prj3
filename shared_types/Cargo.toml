@@ -1,0 +1,19 @@
+[package]
+name = "shared_types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.136", features = ["derive"] }
+diesel = { version = "1.4.8", features = ["sqlite", "chrono"], optional = true }
+rocket = { version = "0.5.0-rc.1", optional = true }
+chrono = { version = "0.4.19", features = ["serde"] }
+rand = { version = "0.8.5", optional = true }
+rust-argon2 = { version = "1.0.0", optional = true }
+diesel_migrations = { version = "1.4.0", optional = true }
+
+[features]
+database = ["rand", "diesel", "rust-argon2"]
+run_migrations = ["diesel_migrations", "database"]

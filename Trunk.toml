@@ -1,0 +1,5 @@
+[build]
+target = "prj3_client/index.html"
+
+[[proxy]]
+backend = "http://localhost:8000/api/v1/"

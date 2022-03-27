@@ -1,20 +1,34 @@
+#[cfg(feature = "diesel")]
 use diesel::serialize::{self, Output, ToSql};
+#[cfg(feature = "diesel")]
 use diesel::deserialize::{self, FromSql};
+#[cfg(feature = "diesel")]
 use diesel::sql_types::Integer;
 
-use rocket::serde::Serialize;
-use rocket::serde::Deserialize;
+#[cfg(feature = "rocket")]
+use rocket::request::{self, Request, FromRequest};
+#[cfg(feature = "rocket")]
+use rocket::http::Status;
 
+#[cfg(feature = "diesel")]
 use std::io::Write;
 
-#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
-#[serde(crate = "rocket::serde")]
-#[sql_type = "Integer"]
+use serde::Serialize;
+use serde::Deserialize;
+
+use chrono::{DateTime, Utc};
+use chrono::serde::ts_seconds;
+
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
+#[cfg_attr(feature = "rocket", derive(FromFormField))]
+#[cfg_attr(feature = "diesel", sql_type = "Integer")]
 pub enum GameType {
     Connect4 = 1,
     OttoToot = 2
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> ToSql<Integer, DB> for GameType
 where
     DB: diesel::backend::Backend,
@@ -25,6 +39,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> FromSql<Integer, DB> for GameType
 where
     DB: diesel::backend::Backend,
@@ -39,15 +54,17 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
-#[serde(crate = "rocket::serde")]
-#[sql_type = "Integer"]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
+#[cfg_attr(feature = "rocket", derive(FromFormField))]
+#[cfg_attr(feature = "diesel", sql_type = "Integer")]
 pub enum CpuLevel {
     Easy = 3,
     Medium = 6,
     Hard = 9
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> ToSql<Integer, DB> for CpuLevel
 where
     DB: diesel::backend::Backend,
@@ -58,6 +75,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> FromSql<Integer, DB> for CpuLevel
 where
     DB: diesel::backend::Backend,
@@ -73,15 +91,17 @@ where
     }
 }
 
-#[derive(Debug, Clone, Hash, Eq, Copy, PartialEq, FromSqlRow, AsExpression, Serialize, Deserialize, FromFormField)]
-#[serde(crate = "rocket::serde")]
-#[sql_type = "Integer"]
+#[derive(Debug, Clone, Hash, Eq, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
+#[cfg_attr(feature = "rocket", derive(FromFormField))]
+#[cfg_attr(feature = "diesel", sql_type = "Integer")]
 pub enum MatchResult {
     Win = 1,
     Tie = 0,
     Loss = -1
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> ToSql<Integer, DB> for MatchResult
 where
     DB: diesel::backend::Backend,
@@ -92,6 +112,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> FromSql<Integer, DB> for MatchResult
 where
     DB: diesel::backend::Backend,
@@ -107,15 +128,55 @@ where
     }
 }
 
-#[derive(FromFormField)]
+#[cfg_attr(feature = "rocket", derive(FromFormField))]
 pub enum MatchQuerySortBy {
     StartTime,
     Duration,
 }
 
-#[derive(FromForm)]
+#[cfg_attr(feature = "rocket", derive(FromForm))]
 pub struct MatchQueryFilter {
     pub result: Vec<MatchResult>,
     pub game: Vec<GameType>,
     pub level: Vec<CpuLevel>
+}
+
+#[derive(Debug)]
+pub struct UserAuthToken(String);
+
+impl UserAuthToken {
+    pub fn unwrap_token(self) -> String {
+        self.0
+    }
+}
+
+#[cfg_attr(feature = "rocket", rocket::async_trait)]
+#[cfg(feature = "rocket")]
+impl<'r> FromRequest<'r> for UserAuthToken {
+    type Error = ();
+
+    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+        match req.cookies().get_private("user_auth_token") {
+            Some(cookie) => request::Outcome::Success(
+                UserAuthToken(String::from(cookie.value()))
+            ),
+            None => request::Outcome::Failure((Status::Unauthorized, ()))
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct MatchClientRecord {
+    #[serde(with = "ts_seconds")]
+    start_time: DateTime<Utc>,
+    game_id: GameType,
+    cpu_level: CpuLevel,
+    duration: i32,
+    result: MatchResult
+}
+
+impl MatchClientRecord {
+    pub fn unwrap_record(self) -> (DateTime<Utc>, GameType, CpuLevel, i32, MatchResult) {
+        (self.start_time, self.game_id, self.cpu_level, self.duration, self.result)
+    }
 }

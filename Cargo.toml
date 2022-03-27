@@ -1,27 +1,8 @@
-[package]
-name = "project3"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[target.'cfg(target_family="wasm")'.dependencies]
-wasm-bindgen = "^0.2"
-yew = "0.19"
-
-[target.'cfg(not(target_family="wasm"))'.dependencies]
-rocket = { version = "0.5.0-rc.1", features = ["secrets", "json"] }
-rocket_sync_db_pools = { version = "0.1.0-rc.1", default-features = false, features = ["diesel_sqlite_pool"] }
-rust-argon2 = "1.0.0"
-diesel = { version = "1.4.5", features = ["sqlite", "chrono"] }
-chrono = { version = "0.4.19", features = ["serde"] }
-rand = "0.8.5"
-itertools = "0.10.3"
-
-[[bin]]
-name = "server"
-path = "src/main.rs"
-
-[lib]
-path = "src/lib.rs"
-crate-type = ["cdylib"]
+members = [
+    "shared_types",
+    "prj3_server",
+    "prj3_client",
+    "prj3_cli"
+]
