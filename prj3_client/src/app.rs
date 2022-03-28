@@ -1,5 +1,9 @@
 use yew::prelude::*;
 
+#[path = "../src/pages/mod.rs"]
+mod pages;
+use crate::app::pages::Login;
+
 pub struct App {}
 
 pub enum Msg {}
@@ -18,7 +22,7 @@ impl Component for App {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
-            <p>{ "Hello world!" }</p>
+            <Login/>
         }
     }
 }
