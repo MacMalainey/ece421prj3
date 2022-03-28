@@ -148,6 +148,16 @@ impl UserAuthToken {
     pub fn unwrap_token(self) -> String {
         self.0
     }
+
+}
+
+#[cfg(feature = "manual_auth_token")]
+impl From<String> for UserAuthToken {
+
+    fn from(token: String) -> Self {
+        UserAuthToken(token)
+    }
+
 }
 
 #[cfg_attr(feature = "rocket", rocket::async_trait)]

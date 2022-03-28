@@ -18,3 +18,4 @@ itertools = { version = "0.10.3", optional = true }
 [features]
 database = ["rand", "diesel", "rust-argon2", "itertools"]
 run_migrations = ["diesel_migrations", "database"]
+manual_auth_token = []
