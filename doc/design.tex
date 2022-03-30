@@ -28,13 +28,158 @@
 
 \subsubsection{User Authentication}
 
-\mint{http}|/auth/login//|
-\mint{http}|/auth/logout/|
-\mint{http}|/auth/register/|
+\begin{description}
+  \item[POST] \mintinline{text}|/api/v0/user/login/|
+  \begin{description}
+    \item[Description] \hfill \\
+    Logs in a user.
+    \item[Request Body Format] \hfill \\
+    Form Data
+    \item[Request Body Data] \hfill \\
+    \mintinline{text}{user_id = USER_PROVIDED_USERNAME} \\
+    \mintinline{text}{password = USER_PROVIDED_RAW_PASSWORD}
+    \item[Response Cookies] \hfill \\
+    ADD \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If successful \\
+    401 - If \mintinline{text}{user_id} and \mintinline{text}{password} do match an existing user \\
+    404 - If request body is malformed % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Known Issues] 
+    \item Attempting to log in to another account when already logged will automatically log out the other user from the server's perspective.
+    However this might pose a security concern (especially if user specific data gets cached in the future)
+    \item Currently accepts and processes requests without any method of form encryption (dangerously insecure)
+  \end{description}
 
-\subsubsection{Game Records}
+  \item[POST] \mintinline{text}|/api/v0/user/logout/|
+  \begin{description}
+    \item[Description] \hfill \\
+    Logs out the currently logged in user.
+    \item[Request Cookies] \hfill \\
+    CONTAINS \mintinline{text}{user_auth_token}
+    \item[Response Cookies] \hfill \\
+    CLEAR \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If successful \\
+    404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Known Issues] 
+    \item Need to verify this removes the cookie in browser
+  \end{description}
 
-\mint{http}|/games/:gameid/record/|
-\mint{http}|/games/:gameid/records/|
+  \pagebreak
+  \item[POST] \mintinline{text}|/api/v0/user/register/|
+  \begin{description}
+    \item[Description] \hfill \\
+    Registers a new user.
+    \item[Request Body Format] \hfill \\
+    Form Data
+    \item[Request Body Data] \hfill \\
+    \mintinline{text}{user_id = USER_PROVIDED_USERNAME} \\
+    \mintinline{text}{password = USER_PROVIDED_RAW_PASSWORD}
+    \item[Response Cookies] \hfill \\
+    ADD \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If \mintinline{text}{user_id} and \mintinline{text}{password} match an existing user \\
+    401 - If \mintinline{text}{user_id} and \mintinline{text}{password} do match an existing user \\
+    404 - If request body is malformed % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Response Cookies] \hfill \\
+    ADD \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If \mintinline{text}{user_id} and \mintinline{text}{password} match an existing user \\
+    404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Known Issues] 
+    \item Attempting to log in to another account when already logged will automatically log out the other user from the server's perspective.
+    However this might pose a security concern (especially if user specific data gets cached in the future)
+    \item Currently accepts and processes requests without any method of form encryption (dangerously insecure)
+    \item Assumes client enforces proper password requirements
+  \end{description}
+\end{description}
+
+\pagebreak
+
+\subsubsection{Match Records}
+
+\begin{description}
+  \item[POST] \mintinline{text}|/api/v0/user/records/add|
+  \begin{description}
+    \item[Description] \hfill \\
+    Registers match data for the current user
+    \item[Request Body Format] \hfill \\
+    JSON
+    \item[Request Body Data] \hfill
+    \begin{minted}{js}
+"start_time": START_TIME_IN_SECONDS_FROM_EPOCH_UTC_TIME,
+"game_id": {"Connect4", "OttoToot"},
+"cpu_level": {"Easy", "Medium", "Hard"},
+"duration": DURATION_IN_SECONDS,
+"result": {"Win", "Loss", "Tie"}
+    \end{minted}
+    \item[Request Cookies] \hfill \\
+    CONTAINS \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If successful \\
+    401 - If \mintinline{text}{user_auth_token} does match an existing user \\
+    404 - If request body is malformed % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN STATUS
+    \item[Known Issues] 
+    \item Does not verify \mintinline{js}|"start_time"|.  Probably best to remove this field and use server time to log time upon recording.
+  \end{description}
+
+  \item[GET] \mintinline{text}|/api/v0/user/records|
+  \begin{description}
+    \item[Description] \hfill \\
+    Retrieves all the match data from the current user sorted by most recent matches first
+    \item[Request Cookies] \hfill \\
+    CONTAINS \mintinline{text}{user_auth_token}
+    \item[Optional Request Query Parameters] \hfill \\
+    \mintinline{text}|limit (default = 10)| \\
+    Number of records to return at once \vspace{0.5em} \\
+    \mintinline{text}|offset (default = 0)| \\
+    Number of records to skip (for pagination)
+    \item[Response Status] \hfill \\
+    200 - If successful \\
+    401 - If \mintinline{text}{user_auth_token} does match an existing user \\
+    404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Known Issues] 
+    \item Does not support any form of filtering or sorting other than listed
+    \item Does not log out user if \mintinline{text}{user_auth_token} does match an existing user
+    \item Does not apply a maximum or minimum on limit values
+    \item Should include a count of how many records there are in total
+  \end{description}
+
+  \item[GET] \mintinline{text}|/api/v0/games/records|
+  \begin{description}
+    \item[Description] \hfill \\
+    Retrieves all the match data from the current user sorted by most recent matches first
+    \item[Request Cookies] \hfill \\
+    CONTAINS \mintinline{text}{user_auth_token}
+    \item[Optional Request Query Parameters] \hfill \\
+    \mintinline{text}|limit (default = 10)| \\
+    Number of records to return at once \vspace{0.5em} \\
+    \mintinline{text}|offset (default = 0)| \\
+    Number of records to skip (for pagination) \vspace{0.5em} \\
+    \mintinline{text}|before| \\
+    Returns matches that happened before (UTC timestamp in seconds) \vspace{0.5em} \\
+    \mintinline{text}|after| \\
+    Returns matches that happened after (UTC timestamp in seconds) \vspace{0.5em} \\
+    \mintinline{text}|sort_by (default = starttime)| \\
+    Value to sort by, can be either \mintinline{text}{duration} or \mintinline{text}{starttime} \vspace{0.5em} \\
+    \mintinline{text}|asc| \\
+    Sort direction, defaults to false unless using \mintinline{text}{sort_by=duration} \vspace{0.5em} \\
+    \mintinline{text}|filter| \\
+    Only returns elements that match the filter specification (see examples for more info)
+    \item[Response Status] \hfill \\
+    200 - If successful
+    \item[Known Issues] 
+    \item Does not have max and min values for \mintinline{text}{limit}
+    \item Should include a count of how many records there are in total
+  \end{description}
+\end{description}
+
+\subsubsection{Notes for Future Development}
+
+\begin{itemize}
+  \item[] Admin User APIs should be implemented so that a web-created Admin Console may be implemented.
+  This was not implemented right now due to time constraints.
+  \item[] Check APIs for security vulnerabilities (due to time constaints only minimal security could be implemented)
+\end{itemize}
 
 \end{document}
