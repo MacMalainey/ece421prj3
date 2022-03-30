@@ -136,11 +136,10 @@
     Number of records to skip (for pagination)
     \item[Response Status] \hfill \\
     200 - If successful \\
-    401 - If \mintinline{text}{user_auth_token} does match an existing user \\
     404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
     \item[Known Issues] 
     \item Does not support any form of filtering or sorting other than listed
-    \item Does not log out user if \mintinline{text}{user_auth_token} does match an existing user
+    \item Handles case where user doesn't exist by returning empty list instead of an error status
     \item Does not apply a maximum or minimum on limit values
     \item Should include a count of how many records there are in total
   \end{description}
@@ -181,5 +180,23 @@
   This was not implemented right now due to time constraints.
   \item[] Check APIs for security vulnerabilities (due to time constaints only minimal security could be implemented)
 \end{itemize}
+
+\subsection{Backend Stack}
+
+The backend is implemented using \mintinline{text}|rocket(v0.5.0)| for the backend server framework. 
+Through \mintinline{text}|rocket|'s database connection pool library we used \mintinline{text}|diesel|
+as the backend database library which interfaces with a \mintinline{text}|sqlite3| database.
+
+The original design was to use \mintinline{text}|rocket(v0.4.4)| with a \mintinline{text}|mongodb| database through \mintinline{text}|rocket|'s database connection pool library.
+This would allow us to carry over the prior project's database with minimal issue.
+However we found that some of the dependencies had been removed from \mintinline{text}{crates.io} and therefore were not able to use \mintinline{text}|mongodb| with \mintinline{text}|rocket(v0.4.4)|.
+Sadly \mintinline{text}|rocket(v0.5.0)| does not support \mintinline{text}|mongodb| and we decided it was best to not homebrew a solution together.  That is what led us to using \mintinline{text}|diesel|
+with a \mintinline{text}|sqlite3| database. We felt \mintinline{text}|diesel| was a better option than \mintinline{text}|rusqlite| with its CLI app to be able to create and run database migrations,
+embed migrations into the app so that the database could be built on first run as well as the compile time query checking saving a lot of potential headaches during development and for future development and saved on boilerplate code.
+
+\subsection{Admin CLI}
+
+A local database instance can be investigated directly using \mintinline{text}|prj3_cli|
+which allows for actions on the database that are not currently available through the backend API.
 
 \end{document}
