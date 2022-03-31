@@ -3,8 +3,11 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 mod pages;
+
+mod components;
+
 use pages::{
-    login::Login, home::Home, page_not_found::PageNotFound,
+    connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, TOOT_setup:: TOOTSetup
 };
 use yew::html::Scope;
 
@@ -14,6 +17,8 @@ enum Route {
     Home,
     #[at("/login")]
     Login,
+    #[at("/leaderboard")]
+    Leaderboard,
     #[at("/games/connect4")]
     Connect4,
     #[at("/games/toototto")]
@@ -27,8 +32,9 @@ fn switch(routes: &Route) -> Html {
     match routes {
         Route::Home => html! { <Home/> },
         Route::Login => html! { <Login/> },
-        Route::Connect4 => html! { <PageNotFound/> },
-        Route::TootOtto => html! { <PageNotFound/> },
+        Route::Leaderboard => html! { <PageNotFound/> },
+        Route::Connect4 => html! { <Connect4Setup/> },
+        Route::TootOtto => html! { <TOOTSetup/> },
         Route::NotFound => html! { <PageNotFound/> },
     }
 }
@@ -67,14 +73,6 @@ impl Component for App {
                 <main>
                     <Switch<Route> render={Switch::render(switch)} />
                 </main>
-                <footer class="footer">
-                    <div class="content has-text-centered">
-                        { "Powered by " }
-                        <a href="https://yew.rs">{ "Yew" }</a>
-                        { " using " }
-                        <a href="https://bulma.io">{ "Bulma" }</a>
-                    </div>
-                </footer>
             </BrowserRouter>
         }
     }
@@ -88,15 +86,13 @@ impl App {
 
         html! {
             <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-                <div class="navbar-brand">
-                    <h1 class="navbar-item is-size-3">{ "Board Want Games" }</h1>
+                <div class="navbar-brand ml-3">
+                  <Link<Route> to={Route::Home}>
+                    <img width="45" class="navbar-item" alt="icon" src="assets/main_icon.svg" />
+                    </Link<Route>>
                 </div>
                 <div class={classes!("navbar-menu", active_class)}>
                     <div class="navbar-start">
-                        <Link<Route> classes={classes!("navbar-item")} to={Route::Home}>
-                            { "Home" }
-                        </Link<Route>>
-
                         <div class="navbar-item has-dropdown is-hoverable">
                             <div class="navbar-link">
                                 { "Games" }
@@ -110,6 +106,9 @@ impl App {
                                 </Link<Route>>
                             </div>
                         </div>
+                        <Link<Route> classes={classes!("navbar-item")} to={Route::Leaderboard}>
+                            { "Leaderboard" }
+                        </Link<Route>>
                     </div>
                     <div class="navbar-end">
                         <Link<Route> classes={classes!("navbar-item")} to={Route::Login}>
