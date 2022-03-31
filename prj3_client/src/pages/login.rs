@@ -57,11 +57,9 @@ impl Login {
         }
 
         html! {
-            <div class="container columns mt-6">
-                <div class="column"/>
-                <div class="column is-two-fifths">
-                    <h1 class="title has-text-centered">{"Boardgames"}</h1>
-                    <div class="tabs mx-6 mt-6">
+            <div class="container is-max-desktop center-form">
+                    <h1 class="title has-text-centered mt-6">{"Boardgames"}</h1>
+                    <div class="tabs mt-6">
                       <ul>
                         <li class={login_class} onclick={link.callback(|_| Msg::LoginPressed)}>
                           <a>{"Login"}</a>
@@ -71,7 +69,7 @@ impl Login {
                         </li>
                       </ul>
                     </div>
-                    <form class="mx-6">
+                    <form>
                       <div class="field mt-4">
                         <label class="label">{"Username"}</label>
                         <div class="control">
@@ -87,9 +85,6 @@ impl Login {
 
                       <button class="button is-primary mt-4">{button_text}</button>
                     </form>
-                    <div/>
-                <div class="column"/>
-                </div>
             </div>
         }
     }
