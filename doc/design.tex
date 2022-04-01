@@ -29,7 +29,7 @@
 \subsubsection{User Authentication}
 
 \begin{description}
-  \item[POST] \mintinline{text}|/api/v0/user/login/|
+  \item[POST] \mintinline{text}|/api/v1/user/login/|
   \begin{description}
     \item[Description] \hfill \\
     Logs in a user.
@@ -50,7 +50,7 @@
     \item Currently accepts and processes requests without any method of form encryption (dangerously insecure)
   \end{description}
 
-  \item[POST] \mintinline{text}|/api/v0/user/logout/|
+  \item[POST] \mintinline{text}|/api/v1/user/logout/|
   \begin{description}
     \item[Description] \hfill \\
     Logs out the currently logged in user.
@@ -66,7 +66,7 @@
   \end{description}
 
   \pagebreak
-  \item[POST] \mintinline{text}|/api/v0/user/register/|
+  \item[POST] \mintinline{text}|/api/v1/user/register/|
   \begin{description}
     \item[Description] \hfill \\
     Registers a new user.
@@ -99,7 +99,7 @@
 \subsubsection{Match Records}
 
 \begin{description}
-  \item[POST] \mintinline{text}|/api/v0/user/records/add|
+  \item[POST] \mintinline{text}|/api/v1/user/records/add|
   \begin{description}
     \item[Description] \hfill \\
     Registers match data for the current user
@@ -123,7 +123,7 @@
     \item Does not verify \mintinline{js}|"start_time"|.  Probably best to remove this field and use server time to log time upon recording.
   \end{description}
 
-  \item[GET] \mintinline{text}|/api/v0/user/records|
+  \item[GET] \mintinline{text}|/api/v1/user/records|
   \begin{description}
     \item[Description] \hfill \\
     Retrieves all the match data from the current user sorted by most recent matches first
@@ -144,7 +144,7 @@
     \item Should include a count of how many records there are in total
   \end{description}
 
-  \item[GET] \mintinline{text}|/api/v0/games/records|
+  \item[GET] \mintinline{text}|/api/v1/games/records|
   \begin{description}
     \item[Description] \hfill \\
     Retrieves all the match data from the current user sorted by most recent matches first
@@ -196,7 +196,7 @@ embed migrations into the app so that the database could be built on first run a
 
 \subsection{Admin CLI}
 
-A local database instance can be investigated directly using \mintinline{text}|prj3_cli|
+A local database can be investigated and altered directly using \mintinline{text}|prj3_cli|
 which allows for actions on the database that are not currently available through the backend API.
 
 \end{document}

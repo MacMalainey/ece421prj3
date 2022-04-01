@@ -2,9 +2,8 @@ use super::schema::*;
 use super::types::*;
 
 use chrono::NaiveDateTime;
-use chrono::naive::serde::ts_seconds;
-
-use serde::Serialize;
+use chrono::DateTime;
+use chrono::Utc;
 
 #[derive(Debug, Identifiable, Queryable, Insertable)]
 #[table_name = "users"]
@@ -39,12 +38,11 @@ impl UserModel {
 
 }
 
-#[derive(Debug, Queryable, Insertable, Serialize)]
+#[derive(Debug, Queryable, Insertable)]
 #[table_name = "match_records"]
 pub struct MatchRecordModel {
     id: Option<i32>,
     user_id: String,
-    #[serde(with = "ts_seconds")]
     start_time: NaiveDateTime,
     game_id: GameType,
     cpu_level: CpuLevel,
@@ -54,16 +52,31 @@ pub struct MatchRecordModel {
 
 impl MatchRecordModel {
 
-    pub fn new_from_client(user_token: UserAuthToken, record: MatchClientRecord) -> Self {
-        let (start_time_utc, game_id, cpu_level, duration, result) = record.unwrap_record();
+    pub fn as_record(self) -> MatchRecord {
+        MatchRecord {
+            user_id: self.user_id,
+            start_time: DateTime::from_utc(self.start_time, Utc),
+            game_id: self.game_id,
+            cpu_level: self.cpu_level,
+            duration: self.duration,
+            result: self.result
+        }
+    }
+}
+
+impl From<(UserAuthToken, MatchClientRecord)> for MatchRecordModel {
+    
+    fn from(f: (UserAuthToken, MatchClientRecord)) -> Self {
+        let (user_token, record) = f;
+
         MatchRecordModel {
             id: None,
             user_id: user_token.unwrap_token(),
-            start_time: start_time_utc.naive_utc(),
-            game_id,
-            cpu_level,
-            duration,
-            result
+            start_time: record.start_time.naive_utc(),
+            game_id: record.game_id,
+            cpu_level: record.cpu_level,
+            duration: record.duration,
+            result: record.result
         }
     }
 }

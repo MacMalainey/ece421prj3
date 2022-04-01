@@ -3,8 +3,8 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 mod pages;
-
 mod components;
+mod apis;
 
 use pages::{
     connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, TOOT_setup:: TOOTSetup
@@ -122,6 +122,6 @@ impl App {
 }
 
 fn main() {
-    wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
+    wasm_logger::init(wasm_logger::Config::new(log::Level::Debug));
     yew::start_app::<App>();
 }

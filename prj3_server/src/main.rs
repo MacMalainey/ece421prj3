@@ -8,7 +8,6 @@ use rocket_sync_db_pools::{diesel, database};
 #[database("user_database")]
 pub struct UserDbConn(SqliteConnection);
 
-mod forms;
 mod routes;
 
 #[launch]
