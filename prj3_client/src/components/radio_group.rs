@@ -1,4 +1,3 @@
-use yew::html::Scope;
 use yew::prelude::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -6,14 +5,12 @@ pub struct Props {
     pub title: String,
     pub options: Vec<String>,
     pub name: String,
-    pub isDiscs: bool,
+    pub is_discs: bool,
 }
 
 pub struct RadioGroup {
 
 }
-
-pub enum Msg {}
 
 impl Component for RadioGroup {
     type Message = ();
@@ -26,7 +23,7 @@ impl Component for RadioGroup {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let title = ctx.props().title.clone();
         let options = ctx.props().options.clone();
-        let isDiscs = ctx.props().isDiscs.clone();
+        let is_discs = ctx.props().is_discs.clone();
         html! {
             <>
                 <div class="is-size-6 mt-4 color-1">
@@ -35,7 +32,7 @@ impl Component for RadioGroup {
                 <div class="control mb-4">
                     <label class="radio">
                         {
-                            if isDiscs {
+                            if is_discs {
                                 options.into_iter().map(|option| {
                                     html!{
                                         <span class="mx-2">
