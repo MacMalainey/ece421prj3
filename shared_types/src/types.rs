@@ -128,6 +128,7 @@ where
     }
 }
 
+#[derive(Serialize)]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
 pub enum MatchQuerySortBy {
     StartTime,
@@ -139,6 +140,39 @@ pub struct MatchQueryFilter {
     pub result: Vec<MatchResult>,
     pub game: Vec<GameType>,
     pub level: Vec<CpuLevel>
+}
+
+impl ToQueryPairs for MatchQueryFilter {
+    type Output = (String, String);
+    fn query_pairs(self) -> Vec<Self::Output> {
+        use itertools::Itertools;
+        self.result.into_iter()
+        .unique()
+        .map(|value| ("filter.result", match value {
+            MatchResult::Loss => "loss",
+            MatchResult::Tie => "tie",
+            MatchResult::Win => "win"
+        }))
+        .chain(
+            self.game.into_iter()
+            .unique()
+            .map(|value| ("filter.game", match value {
+                GameType::Connect4 => "connect4",
+                GameType::OttoToot => "ottotoot"
+            }))
+        )
+        .chain(
+            self.level.into_iter()
+            .unique()
+            .map(|value| ("filter.level", match value {
+                CpuLevel::Easy => "easy",
+                CpuLevel::Medium => "medium",
+                CpuLevel::Hard => "hard"
+            }))
+        ).map(
+            |(key, value)| (String::from(key), String::from(value))
+        ).collect()
+    }
 }
 
 #[derive(Debug)]
@@ -175,18 +209,35 @@ impl<'r> FromRequest<'r> for UserAuthToken {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MatchClientRecord {
     #[serde(with = "ts_seconds")]
-    start_time: DateTime<Utc>,
-    game_id: GameType,
-    cpu_level: CpuLevel,
-    duration: i32,
-    result: MatchResult
+    pub start_time: DateTime<Utc>,
+    pub game_id: GameType,
+    pub cpu_level: CpuLevel,
+    pub duration: i32,
+    pub result: MatchResult
 }
 
-impl MatchClientRecord {
-    pub fn unwrap_record(self) -> (DateTime<Utc>, GameType, CpuLevel, i32, MatchResult) {
-        (self.start_time, self.game_id, self.cpu_level, self.duration, self.result)
-    }
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MatchRecord {
+    pub user_id: String,
+    #[serde(with = "ts_seconds")]
+    pub start_time: DateTime<Utc>,
+    pub game_id: GameType,
+    pub cpu_level: CpuLevel,
+    pub duration: i32,
+    pub result: MatchResult
+}
+
+#[derive(Debug, Serialize)]
+#[cfg_attr(feature = "rocket", derive(FromForm))]
+pub struct UserAuthForm {
+    pub user_id: String,
+    pub password: String,
+}
+
+pub trait ToQueryPairs {
+    type Output: serde::Serialize;
+    fn query_pairs(self) -> Vec<Self::Output>;
 }

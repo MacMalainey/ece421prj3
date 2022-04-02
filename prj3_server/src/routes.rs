@@ -4,7 +4,6 @@ use rocket::form::Form;
 use rocket::serde::json::Json;
 
 use super::UserDbConn;
-use super::forms::*;
 
 use shared_types::models::{UserModel, MatchRecordModel};
 use shared_types::types::*;
@@ -90,7 +89,7 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 }
 
 #[get("/user/records?<limit>&<offset>")]
-async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecordModel>>, Status> {
+async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecord>>, Status> {
     db.run(move |c| {
         match_records::find_by_user(
             c,
@@ -99,7 +98,7 @@ async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, o
             offset.unwrap_or(0)
         )
     }).await
-        .map(|data| Json(data))
+        .map(|mut data| Json(data.drain(..).map(|r| r.as_record()).collect()))
         .map_err(|err| {
             eprintln!("{:?}", err);
             Status::InternalServerError
@@ -112,7 +111,7 @@ async fn user_record_add(db: UserDbConn, record: Json<MatchClientRecord>, auth_t
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
-    let match_record = MatchRecordModel::new_from_client(auth_token, record.into_inner());
+    let match_record = MatchRecordModel::from((auth_token, record.into_inner()));
 
     match db.run(move |c| {
         match_records::add(c, match_record)
@@ -139,7 +138,7 @@ async fn game_records(
     sort_by: Option<MatchQuerySortBy>,
     asc: Option<bool>,
     filter: Option<MatchQueryFilter>
-) -> Result<Json<Vec<MatchRecordModel>>, Status> {
+) -> Result<Json<Vec<MatchRecord>>, Status> {
 
     let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
     let asc = asc.unwrap_or_else(|| {
@@ -161,7 +160,7 @@ async fn game_records(
             offset.unwrap_or(0)
         )
     }).await
-        .map(|data| Json(data))
+        .map(|mut data| Json(data.drain(..).map(|r| r.as_record()).collect()))
         .map_err(|err| {
             eprintln!("{:?}", err);
             Status::InternalServerError
