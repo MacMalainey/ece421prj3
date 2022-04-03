@@ -1,5 +1,3 @@
-use std::fmt::format;
-use yew::html::Scope;
 use yew::prelude::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -8,6 +6,7 @@ pub struct Props {
     pub options: Vec<String>,
     pub name: String,
     pub is_discs: bool,
+    pub should_start: bool
 }
 
 pub struct RadioGroup {
@@ -47,6 +46,9 @@ impl Component for RadioGroup {
         let title = ctx.props().title.clone();
         let options = ctx.props().options.clone();
         let is_discs = ctx.props().is_discs.clone();
+
+        // if ctx.props().should_start.clone() {
+        // }
 
         html! {
             <>

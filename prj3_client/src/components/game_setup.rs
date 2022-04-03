@@ -12,18 +12,28 @@ pub struct Props {
     pub disc_colors: Vec<String>,
 }
 
-pub struct GameSetup {}
+pub struct GameSetup {
+    should_start: bool
+}
 
+pub enum Msg {
+    StartPressed,
+}
 impl Component for GameSetup {
-    type Message = ();
+    type Message = Msg;
     type Properties = Props;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {}
+        Self { should_start: false }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        false
+        match _msg {
+            Msg::StartPressed => {
+                self.should_start = true;
+                true
+            }
+        }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -35,6 +45,7 @@ impl Component for GameSetup {
         let disc_colors = ctx.props().disc_colors.clone();
 
         let setup_header = "Steps to play ".to_string() + &name + ": ";
+
         html! {
             <div class="container" style="max-width:850px">
                 <h1 class="title has-text-centered mt-6">{name}</h1>
@@ -61,11 +72,11 @@ impl Component for GameSetup {
                         </div>
                         <div class="column is-three-fifths background-5">
                             <div style="padding:25px">
-                                <RadioGroup title={"Difficulties"} options={difficulties} name={"difficulty"} is_discs={false}/>
-                                <RadioGroup title={"Board sizes"} options={board_sizes} name={"board_size"} is_discs={false}/>
-                                <RadioGroup title={"Disc colors"} options={disc_colors} name={"disc_color"} is_discs={true}/>
+                                <RadioGroup title={"Difficulties"} options={difficulties} name={"difficulty"} is_discs={false} should_start={self.should_start}/>
+                                <RadioGroup title={"Board sizes"} options={board_sizes} name={"board_size"} is_discs={false} should_start={self.should_start}/>
+                                <RadioGroup title={"Disc colors"} options={disc_colors} name={"disc_color"} is_discs={true} should_start={self.should_start}/>
                                 <div class="container" style={"width:90%; margin-left:0.75rem; margin-top: 190px;" }>
-                                    <button class="button is-primary" style={"width: 100%;"}>{"Start game"}</button>
+                                    <button class="button is-primary" onclick={ctx.link().callback(|_| Msg::StartPressed)} style={"width: 100%;"}>{"Start game"}</button>
                                 </div>
                             </div>
                         </div>
