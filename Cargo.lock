@@ -1325,6 +1325,7 @@ dependencies = [
  "reqwest",
  "serde",
  "shared_types",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-logger",
  "web-sys",
