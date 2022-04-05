@@ -12,7 +12,7 @@ mod components;
 mod services;
 
 use pages::{
-    connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, toot_setup:: TootSetup
+    connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, toot_setup::TootSetup
 };
 
 #[derive(Clone, Routable, PartialEq)]
