@@ -1,4 +1,3 @@
-use yew::html::Scope;
 use yew::prelude::*;
 
 use crate::components::{
@@ -12,8 +11,6 @@ pub struct Connect4Setup {
     board_sizes: Vec<String>,
     disc_colors: Vec<String>,
 }
-
-pub enum Msg {}
 
 impl Component for Connect4Setup {
     type Message = ();
@@ -30,7 +27,7 @@ impl Component for Connect4Setup {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
             <GameSetup
                 name = {self.name.clone()}

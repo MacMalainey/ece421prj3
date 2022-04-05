@@ -1,4 +1,3 @@
-use yew::html::Scope;
 use yew::prelude::*;
 
 use crate::components::radio_group::RadioGroup;
@@ -13,9 +12,6 @@ pub struct Props {
 }
 
 pub struct GameSetup {
-}
-
-pub enum Msg {
 }
 
 impl Component for GameSetup {
@@ -52,9 +48,9 @@ impl Component for GameSetup {
                         </div>
                         <div class="column is-three-fifths background-5">
                             <div style="padding:25px">
-                                <RadioGroup title={"Difficulties"} options={difficulties} name={"difficulty"} isDiscs={false}/>
-                                <RadioGroup title={"Board sizes"} options={board_sizes} name={"board_size"} isDiscs={false}/>
-                                <RadioGroup title={"Disc colors"} options={disc_colors} name={"disc_color"} isDiscs={true}/>
+                                <RadioGroup title={"Difficulties"} options={difficulties} name={"difficulty"} is_discs={false}/>
+                                <RadioGroup title={"Board sizes"} options={board_sizes} name={"board_size"} is_discs={false}/>
+                                <RadioGroup title={"Disc colors"} options={disc_colors} name={"disc_color"} is_discs={true}/>
                             </div>
                         </div>
                     </div>
