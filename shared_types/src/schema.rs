@@ -1,8 +1,8 @@
 table! {
     match_records (id) {
         id -> Nullable<Integer>,
-        user_id -> Text,
-        start_time -> Timestamp,
+        user_id -> Nullable<Text>,
+        finished_at -> Timestamp,
         game_id -> Integer,
         cpu_level -> Integer,
         duration -> Integer,

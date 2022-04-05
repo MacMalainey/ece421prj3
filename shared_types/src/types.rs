@@ -13,8 +13,7 @@ use rocket::http::Status;
 #[cfg(feature = "diesel")]
 use std::io::Write;
 
-use serde::Serialize;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 use chrono::{DateTime, Utc};
 use chrono::serde::ts_seconds;
@@ -128,7 +127,7 @@ where
     }
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Copy, Serialize)]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
 pub enum MatchQuerySortBy {
     StartTime,
@@ -179,10 +178,9 @@ impl ToQueryPairs for MatchQueryFilter {
 pub struct UserAuthToken(String);
 
 impl UserAuthToken {
-    pub fn unwrap_token(self) -> String {
+    pub fn into_inner(self) -> String {
         self.0
     }
-
 }
 
 #[cfg(feature = "manual_auth_token")]
@@ -210,9 +208,7 @@ impl<'r> FromRequest<'r> for UserAuthToken {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct MatchClientRecord {
-    #[serde(with = "ts_seconds")]
-    pub start_time: DateTime<Utc>,
+pub struct ClientMatchData {
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
     pub duration: i32,
@@ -221,16 +217,23 @@ pub struct MatchClientRecord {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MatchRecord {
-    pub user_id: String,
+    pub user_id: Option<String>,
     #[serde(with = "ts_seconds")]
-    pub start_time: DateTime<Utc>,
+    pub finished_at: DateTime<Utc>,
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
     pub duration: i32,
     pub result: MatchResult
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Records<T> {
+    pub records: Vec<T>,
+    pub offset: i64,
+    pub total_count: i64
+}
+
+#[derive(Debug, Eq, PartialEq, Hash, Serialize)]
 #[cfg_attr(feature = "rocket", derive(FromForm))]
 pub struct UserAuthForm {
     pub user_id: String,
@@ -240,4 +243,9 @@ pub struct UserAuthForm {
 pub trait ToQueryPairs {
     type Output: serde::Serialize;
     fn query_pairs(self) -> Vec<Self::Output>;
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct UserInfo {
+    pub user_id: String
 }

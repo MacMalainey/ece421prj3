@@ -32,7 +32,7 @@ pub mod users {
         users.find(id).first::<UserModel>(conn).optional()
     }
 
-    pub fn register_new(conn: &SqliteConnection, user: UserModel) -> Result<()> {
+    pub fn add(conn: &SqliteConnection, user: UserModel) -> Result<()> {
         use crate::schema::users::dsl::*;
 
         user.insert_into(users).execute(conn).map(|_| ())
@@ -56,17 +56,46 @@ pub mod match_records {
         record.insert_into(match_records).execute(conn).map(|_| ())
     }
 
-    pub fn find_by_user(conn: &SqliteConnection, uid: &str, limit: i64, offset: i64) -> Result<Vec<MatchRecordModel>> {
+    pub fn find_by_user(
+        conn: &SqliteConnection,
+        uid: &str,
+        filter: Option<MatchQueryFilter>,
+        sort_by: MatchQuerySortBy,
+        asc: bool,
+        before: Option<i64>,
+        after: Option<i64>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<(Vec<MatchRecordModel>, i64)> {
         use crate::schema::match_records::dsl::*;
 
-        match_records
+        build_match_record_query(
+            &filter,
+            sort_by,
+            asc,
+            before,
+            after
+        )
+        .filter(user_id.eq(uid))
+        .limit(limit)
+        .offset(offset)
+        .load::<MatchRecordModel>(conn)
+        .and_then(|records| 
+            build_match_record_query(
+                &filter,
+                sort_by,
+                asc,
+                before,
+                after
+            )
             .filter(user_id.eq(uid))
-            .order_by(start_time.desc())
-            .limit(limit)
-            .offset(offset).load::<MatchRecordModel>(conn)
+            .count()
+            .first::<i64>(conn)
+            .map(|count| (records, count))
+        )
     }
 
-    pub fn get(
+    pub fn find_all_users(
         conn: &SqliteConnection,
         filter: Option<MatchQueryFilter>,
         sort_by: MatchQuerySortBy,
@@ -75,54 +104,83 @@ pub mod match_records {
         after: Option<i64>,
         limit: i64,
         offset: i64,
-    ) -> Result<Vec<MatchRecordModel>> {
+    ) -> Result<(Vec<MatchRecordModel>, i64)> {
+        build_match_record_query(
+            &filter,
+            sort_by,
+            asc,
+            before,
+            after
+        )
+        .limit(limit)
+        .offset(offset)
+        .load::<MatchRecordModel>(conn)
+        .and_then(|records|
+            build_match_record_query(
+                &filter,
+                sort_by,
+                asc,
+                before,
+                after
+            )
+            .count()
+            .first::<i64>(conn)
+            .map(|count| (records, count))
+        )
+    }
+
+    fn build_match_record_query<'a>(
+        filter: &Option<MatchQueryFilter>,
+        sort_by: MatchQuerySortBy,
+        asc: bool,
+        before: Option<i64>,
+        after: Option<i64>,
+    ) -> crate::schema::match_records::BoxedQuery<'a, diesel::sqlite::Sqlite> {
         use crate::schema::match_records::dsl::*;
         use itertools::Itertools;
-
+    
         let mut query = match_records.into_boxed::<diesel::sqlite::Sqlite>();
-
+    
         if let Some(filters) = filter {
             let result_filters: Vec<MatchResult> = filters.result.iter().unique().cloned().collect();
             if result_filters.len() > 0 {
                 query = query.filter(result.eq_any(result_filters));
             }
-
+    
             let game_filters: Vec<GameType> = filters.game.iter().unique().cloned().collect();
             if game_filters.len() > 0 {
                 query = query.filter(game_id.eq_any(game_filters));
             }
-
+    
             let level_filters: Vec<CpuLevel> = filters.level.iter().unique().cloned().collect();
             if level_filters.len() > 0 {
                 query = query.filter(cpu_level.eq_any(level_filters));
             }
         }
-
+    
         if let Some(before_ts) = before {
-            query = query.filter(start_time.lt(NaiveDateTime::from_timestamp(before_ts, 0)));
+            query = query.filter(finished_at.lt(NaiveDateTime::from_timestamp(before_ts, 0)));
         }
-
+    
         if let Some(after_ts) = after {
-            query = query.filter(start_time.gt(NaiveDateTime::from_timestamp(after_ts, 0)));
+            query = query.filter(finished_at.gt(NaiveDateTime::from_timestamp(after_ts, 0)));
         }
-
+    
         query = match sort_by {
             MatchQuerySortBy::StartTime =>
                 if asc {
-                    query.order(start_time.asc())
+                    query.order(finished_at.asc())
                 } else {
-                    query.order(start_time.desc())
+                    query.order(finished_at.desc())
                 },
             MatchQuerySortBy::Duration =>
                 if asc {
-                    query.order((duration.asc(), start_time.desc()))
+                    query.order((duration.asc(), finished_at.desc()))
                 } else {
-                    query.order((duration.desc(), start_time.desc()))
+                    query.order((duration.desc(), finished_at.desc()))
                 }
         };
-
-        query = query.limit(limit).offset(offset);
-
-        query.load::<MatchRecordModel>(conn)
+    
+        query
     }
 }

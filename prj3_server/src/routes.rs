@@ -45,6 +45,32 @@ async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJa
     status
 }
 
+#[get("/user/verify")]
+async fn user_verify(
+    db: UserDbConn,
+    cookies: &CookieJar<'_>,
+    auth: UserAuthToken
+) -> Result<Json<UserInfo>, Status> {
+    let user_id = auth.into_inner();
+    let user_id_moved = user_id.clone();
+
+    let result = db.run(move |c| 
+        users::find_by_id(c, &user_id_moved).map(|user| user.is_some())
+    ).await;
+
+    match result {
+        Ok(true) => Ok(Json(UserInfo { user_id })),
+        Ok(false) => {
+            cookies.remove_private(Cookie::named("user_auth_token"));
+            Err(Status::Unauthorized)
+        }
+        Err(err) => {
+            eprintln!("{:?}", err);
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
 #[post("/user/logout")]
 fn user_logout(cookies: &CookieJar<'_>, _auth: UserAuthToken) -> Status {
     cookies.remove_private(Cookie::named("user_auth_token"));
@@ -62,7 +88,7 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
     match UserModel::generate_new(auth.user_id, auth.password) {
         Ok(user) => {
             let (status, auth_cookie) = db.run(move |c| {
-                match users::register_new(c, user) {
+                match users::add(c, user) {
                     Ok(_) => {
                         (Status::Ok, Some(Cookie::build("user_auth_token", uid).finish()))
                     },
@@ -88,17 +114,48 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 
 }
 
-#[get("/user/records?<limit>&<offset>")]
-async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, offset: Option<i64>) -> Result<Json<Vec<MatchRecord>>, Status> {
+#[get("/user/records?<limit>&<offset>&<before>&<after>&<sort_by>&<asc>&<filter>")]
+async fn user_records(
+    db: UserDbConn,
+    auth: UserAuthToken,
+    limit: Option<i64>,
+    offset: Option<i64>,
+    before: Option<i64>,
+    after: Option<i64>,
+    sort_by: Option<MatchQuerySortBy>,
+    asc: Option<bool>,
+    filter: Option<MatchQueryFilter>
+) -> Result<Json<Records<MatchRecord>>, Status> {
+    let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
+    let asc = asc.unwrap_or_else(|| {
+        match sort_by {
+            MatchQuerySortBy::StartTime => false,
+            MatchQuerySortBy::Duration => true
+        }
+    });
+
+    let offset = offset.unwrap_or(0);
+
     db.run(move |c| {
         match_records::find_by_user(
             c,
-            &auth.unwrap_token(),
+            &auth.into_inner(),
+            filter,
+            sort_by,
+            asc,
+            before,
+            after,
             limit.unwrap_or(10),
-            offset.unwrap_or(0)
+            offset
         )
     }).await
-        .map(|mut data| Json(data.drain(..).map(|r| r.as_record()).collect()))
+        .map(|mut data| Json(
+            Records {
+                records: data.0.drain(..).map(|r| r.as_record()).collect(),
+                offset,
+                total_count: data.1
+            }
+        ))
         .map_err(|err| {
             eprintln!("{:?}", err);
             Status::InternalServerError
@@ -107,7 +164,7 @@ async fn user_records(db: UserDbConn, auth: UserAuthToken, limit: Option<i64>, o
 }
 
 #[post("/user/records/add", format = "json", data = "<record>",)]
-async fn user_record_add(db: UserDbConn, record: Json<MatchClientRecord>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
+async fn user_record_add(db: UserDbConn, record: Json<ClientMatchData>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
     use diesel::result::Error::DatabaseError;
     use diesel::result::DatabaseErrorKind;
 
@@ -138,7 +195,7 @@ async fn game_records(
     sort_by: Option<MatchQuerySortBy>,
     asc: Option<bool>,
     filter: Option<MatchQueryFilter>
-) -> Result<Json<Vec<MatchRecord>>, Status> {
+) -> Result<Json<Records<MatchRecord>>, Status> {
 
     let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
     let asc = asc.unwrap_or_else(|| {
@@ -148,8 +205,10 @@ async fn game_records(
         }
     });
 
+    let offset = offset.unwrap_or(0);
+
     db.run(move |c| {
-        match_records::get(
+        match_records::find_all_users(
             c,
             filter,
             sort_by,
@@ -157,10 +216,16 @@ async fn game_records(
             before,
             after,
             limit.unwrap_or(10),
-            offset.unwrap_or(0)
+            offset
         )
     }).await
-        .map(|mut data| Json(data.drain(..).map(|r| r.as_record()).collect()))
+        .map(|mut data| Json(
+            Records {
+                records: data.0.drain(..).map(|r| r.as_record()).collect(),
+                offset,
+                total_count: data.1
+            }
+        ))
         .map_err(|err| {
             eprintln!("{:?}", err);
             Status::InternalServerError
@@ -171,6 +236,7 @@ async fn game_records(
 pub fn get_routes() -> Vec<rocket::Route> {
     routes![
         user_login,
+        user_verify,
         user_logout,
         user_register,
         user_records,

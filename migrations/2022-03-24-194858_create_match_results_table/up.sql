@@ -1,8 +1,8 @@
 -- Your SQL goes here
 CREATE TABLE match_records (
     id INTEGER PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    start_time DATETIME NOT NULL,
+    user_id TEXT,
+    finished_at DATETIME NOT NULL,
     game_id INTEGER NOT NULL,
     cpu_level INTEGER NOT NULL,
     duration INTEGER NOT NULL,
