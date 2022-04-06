@@ -1,30 +1,35 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use bounce::query::{use_mutation_value};
+use bounce::prelude::*;
+use bounce::query::{use_mutation_value, QueryStatus};
 
 use wasm_bindgen::{JsCast};
 
-use shared_types::types::UserAuthForm;
+use wasm_bindgen_futures::spawn_local;
 
-use crate::services::ServiceError;
-use crate::services::auth::*;
+use shared_types::types::{UserAuthForm, UserInfo};
+
+use crate::mutations::ServiceError;
+use crate::mutations::auth::*;
+use crate::stores::auth::*;
 use crate::Route;
 
 #[derive(PartialEq)]
 struct LoginState {
     is_on_login: bool,
-    has_changed: bool
+    error: Option<String>,
 }
 
 #[function_component(Login)]
 pub fn login() -> Html {
     let state = use_state_eq(|| LoginState {
         is_on_login: true,
-        has_changed: true
+        error: None
     });
 
-    let credentials = use_mutation_value::<AuthCredentials>();
+    let auth_mutation = use_mutation_value::<AuthMutation>();
+    let credentials = use_atom::<AuthCredentials>();
 
     let history = use_history();
 
@@ -41,32 +46,17 @@ pub fn login() -> Html {
         button_text = "Create Account"
     }
 
-    let mut disabled = false;
-    let mut error = None;
-
-    match credentials.result() {
-        None => {
-            // disabled = true;
-        },
-        Some(Ok(u)) => {
-            log::debug!("{:?}", u);
-            history.unwrap().push(Route::Home)
-        },
-        Some(Err(err)) => if !state.has_changed {
-            error = Some(match err {
-                AuthError::InvalidCredentials => "Invalid username or password",
-                AuthError::RegisterTakenUsername => "Username already in use",
-                AuthError::Other(ServiceError::UnableToContactServer) => "Unable to contact server, please try again later",
-                AuthError::Other(ServiceError::InternalServerError) => "Server error occured, please try again later"
-            })
-        }
-    }
+    let disabled = if let AuthCredentials::Verified(_) = *credentials {
+        true
+    } else {
+        auth_mutation.status() == QueryStatus::Loading
+    };
 
     let switch_to_login = {
         let state = state.clone();
         Callback::from(move |_| state.set(LoginState {
             is_on_login: true,
-            has_changed: true
+            error: None
         }))
     };
 
@@ -74,13 +64,12 @@ pub fn login() -> Html {
         let state = state.clone();
         Callback::from(move |_| state.set(LoginState {
             is_on_login: false,
-            has_changed: true
+            error: None
         }))
     };
 
     let submit_form = {
         let state = state.clone();
-        let credentials = credentials.clone();
         Callback::from(move |e: web_sys::FocusEvent| {
             e.prevent_default();
 
@@ -93,17 +82,45 @@ pub fn login() -> Html {
                 password:  data.get("password").as_string().unwrap()
             };
 
-            let credentials = credentials.clone();
-            if state.is_on_login {
-                login_using_input(credentials, form);
+            let login_as = if state.is_on_login {
+                LoginAs::RegisteredUser
             } else {
-                register_user_as(credentials, form);
-            }
+                LoginAs::NewUser
+            };
 
-            state.set(LoginState {
-                is_on_login: state.is_on_login,
-                has_changed: false
-            })
+            let auth_mutation = auth_mutation.clone();
+            let state = state.clone();
+            let history = history.clone();
+            let credentials = credentials.clone();
+            spawn_local(async move {
+                let user_id = form.user_id.clone();
+                let result = auth_mutation.run(AuthRequest {
+                    data: form,
+                    login_as
+                }).await;
+
+                match result {
+                    Ok(u) => {
+                        credentials.set(
+                            AuthCredentials::Verified(UserInfo {
+                                user_id
+                            })
+                        );
+                        history.unwrap().push(Route::Home)
+                    },
+                    Err(err) => state.set(
+                        LoginState {
+                            is_on_login: state.is_on_login,
+                            error: Some(match err {
+                                AuthError::InvalidCredentials => "Invalid username or password",
+                                AuthError::RegisterTakenUsername => "Username already in use",
+                                AuthError::Other(ServiceError::UnableToContactServer) => "Unable to contact server, please try again later",
+                                AuthError::Other(ServiceError::InternalServerError) => "Server error occured, please try again later"
+                            }.into())
+                        }
+                    )
+                }
+            });
         })
     };
 
@@ -112,7 +129,7 @@ pub fn login() -> Html {
         Callback::from(move |_| {
             state.set(LoginState {
                 is_on_login: state.is_on_login,
-                has_changed: true
+                error: None
             })
         })
     };
@@ -143,7 +160,7 @@ pub fn login() -> Html {
                         <input class="input" type="password" name="password" placeholder="********"/>
                     </div>
                 </div>
-                <p class="help is-danger" hidden={error.is_none()}>{error.unwrap_or("")}</p>
+                <p class="help is-danger" hidden={state.error.is_none()}>{state.error.as_ref().unwrap_or(&"".into())}</p>
 
                 <button class="button is-primary mt-4" {disabled}>{button_text}</button>
             </form>

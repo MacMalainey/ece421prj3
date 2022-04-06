@@ -3,17 +3,18 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use bounce::BounceRoot;
-use bounce::query::{use_mutation_value};
-
-use crate::services::auth::*;
+use bounce::prelude::*;
 
 mod pages;
 mod components;
-mod services;
+mod mutations;
+mod stores;
 
 use pages::{
     connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, toot_setup::TootSetup
 };
+
+use stores::auth::AuthCredentials;
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -60,17 +61,12 @@ fn app() -> Html {
 #[function_component(NavBar)]
 fn nav_bar() -> Html {
 
-    let credentials = use_mutation_value::<AuthCredentials>();
+    let credentials = use_atom::<AuthCredentials>();
 
-    let user = match credentials.result() {
-        Some(Ok(cred)) => match cred.as_ref() {
-            AuthCredentials::Verified(info) => Some(info.user_id.clone()),
-            _ => None,
-        }
-        _ => None
+    let user = match *credentials {
+        AuthCredentials::Verified(ref info) => Some(info.user_id.clone()),
+        _ => None,
     };
-
-    log::debug!("{:?}", user);
 
     html! {
         <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
@@ -102,14 +98,17 @@ fn nav_bar() -> Html {
                     {
                         if let Some(username) = user {
                             let on_logout = 
-                                Callback::from(move |_| login_using_guest(credentials.clone()));
+                                Callback::from(move |_| {
+                                    wasm_cookies::delete("user_auth_token");
+                                    credentials.set(AuthCredentials::Guest.into());
+                                });
                             html! {
                                 <div class="navbar-item has-dropdown is-hoverable">
                                     <div class="navbar-link">
                                         { format!("Hello {}", username) }
                                     </div>
                                     <div class="navbar-dropdown">
-                                        <div class="navbar-item" onclick={on_logout}></div>
+                                        <a class="navbar-item" onclick={on_logout}>{"Logout"}</a>
                                     </div>
                                 </div>
                             }
