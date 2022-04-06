@@ -42,8 +42,8 @@ impl UserModel {
 #[table_name = "match_records"]
 pub struct MatchRecordModel {
     id: Option<i32>,
-    user_id: String,
-    start_time: NaiveDateTime,
+    user_id: Option<String>,
+    finished_at: NaiveDateTime,
     game_id: GameType,
     cpu_level: CpuLevel,
     duration: i32,
@@ -55,7 +55,7 @@ impl MatchRecordModel {
     pub fn as_record(self) -> MatchRecord {
         MatchRecord {
             user_id: self.user_id,
-            start_time: DateTime::from_utc(self.start_time, Utc),
+            finished_at: DateTime::from_utc(self.finished_at, Utc),
             game_id: self.game_id,
             cpu_level: self.cpu_level,
             duration: self.duration,
@@ -64,15 +64,14 @@ impl MatchRecordModel {
     }
 }
 
-impl From<(UserAuthToken, MatchClientRecord)> for MatchRecordModel {
+impl From<(UserAuthToken, ClientMatchData)> for MatchRecordModel {
     
-    fn from(f: (UserAuthToken, MatchClientRecord)) -> Self {
+    fn from(f: (UserAuthToken, ClientMatchData)) -> Self {
         let (user_token, record) = f;
-
         MatchRecordModel {
             id: None,
-            user_id: user_token.unwrap_token(),
-            start_time: record.start_time.naive_utc(),
+            user_id: Some(user_token.into_inner()),
+            finished_at: Utc::now().naive_utc(),
             game_id: record.game_id,
             cpu_level: record.cpu_level,
             duration: record.duration,

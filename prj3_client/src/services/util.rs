@@ -2,7 +2,7 @@ use shared_types::types::*;
 
 use reqwest::Url;
 
-fn get_base_url() -> Url {
+pub fn get_base_url() -> Url {
     let origin = web_sys::window().unwrap().location().origin().unwrap();
     Url::parse(&origin).unwrap()
 }
@@ -55,31 +55,6 @@ pub async fn get_records(
         .await?;
 
     Ok(response)
-}
-
-pub async fn login(credentials: UserAuthForm) -> Result<(), APIError> {
-    let endpoint_url = get_base_url().join("api/v1/user/login").unwrap();
-
-    let client = reqwest::Client::new();
-
-    client.post(endpoint_url)
-        .form(&credentials)
-        .send()
-        .await?;
-
-    Ok(())
-}
-
-pub async fn logout() -> Result<(), APIError> {
-    let endpoint_url = get_base_url().join("api/v1/user/logout").unwrap();
-
-    let client = reqwest::Client::new();
-
-    client.post(endpoint_url)
-        .send()
-        .await?;
-
-    Ok(())
 }
 
 #[derive(Debug)]
