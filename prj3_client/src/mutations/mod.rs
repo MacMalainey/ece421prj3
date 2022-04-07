@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod match_records;
 
 mod util;
 

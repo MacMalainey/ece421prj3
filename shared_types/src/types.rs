@@ -127,13 +127,14 @@ where
     }
 }
 
-#[derive(Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
 pub enum MatchQuerySortBy {
     StartTime,
     Duration,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "rocket", derive(FromForm))]
 pub struct MatchQueryFilter {
     pub result: Vec<MatchResult>,
@@ -143,9 +144,9 @@ pub struct MatchQueryFilter {
 
 impl ToQueryPairs for MatchQueryFilter {
     type Output = (String, String);
-    fn query_pairs(self) -> Vec<Self::Output> {
+    fn query_pairs(&self) -> Vec<Self::Output> {
         use itertools::Itertools;
-        self.result.into_iter()
+        self.result.iter()
         .unique()
         .map(|value| ("filter.result", match value {
             MatchResult::Loss => "loss",
@@ -153,7 +154,7 @@ impl ToQueryPairs for MatchQueryFilter {
             MatchResult::Win => "win"
         }))
         .chain(
-            self.game.into_iter()
+            self.game.iter()
             .unique()
             .map(|value| ("filter.game", match value {
                 GameType::Connect4 => "connect4",
@@ -161,7 +162,7 @@ impl ToQueryPairs for MatchQueryFilter {
             }))
         )
         .chain(
-            self.level.into_iter()
+            self.level.iter()
             .unique()
             .map(|value| ("filter.level", match value {
                 CpuLevel::Easy => "easy",
@@ -207,7 +208,7 @@ impl<'r> FromRequest<'r> for UserAuthToken {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct ClientMatchData {
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
@@ -215,7 +216,7 @@ pub struct ClientMatchData {
     pub result: MatchResult
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct MatchRecord {
     pub user_id: Option<String>,
     #[serde(with = "ts_seconds")]
@@ -242,7 +243,7 @@ pub struct UserAuthForm {
 
 pub trait ToQueryPairs {
     type Output: serde::Serialize;
-    fn query_pairs(self) -> Vec<Self::Output>;
+    fn query_pairs(&self) -> Vec<Self::Output>;
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
