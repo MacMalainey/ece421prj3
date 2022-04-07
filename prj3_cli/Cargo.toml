@@ -10,4 +10,5 @@ shared_types = { path = "../shared_types", features = ["database", "run_migratio
 terminal-menu = "2.0.2"
 chrono = "0.4.19"
 diesel = { version = "1.4.5", features = ["sqlite"] }
+libsqlite3-sys = { version = "0.22.2", features = ["bundled"] }
 ansi_term = "0.12"
