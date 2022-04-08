@@ -9,12 +9,21 @@ use shared_types::models::{UserModel, MatchRecordModel};
 use shared_types::types::*;
 use shared_types::queries::*;
 
+/// User Login Route
+/// 
+/// The route authenticates a user using form data
+/// 
+/// On Success
+///  - Returns status 200
+///  - Sets user_auth_form cookie as encrypted value
 #[post("/user/login", data="<auth>")]
 async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
 
     let (status, auth_cookie) = db.run(move |c| {
         match users::find_by_id(c, &auth.user_id) {
+            // Find user
             Ok(Some(user)) => {
+                // Verify password
                 match user.compare(&auth.password) {
                     Ok(true) => {
                         (Status::Ok, Some(Cookie::build("user_auth_token", user.user_id).finish()))
@@ -38,6 +47,7 @@ async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJa
         }
     }).await;
 
+    // Set user_auth_token
     if let Some(cookie) = auth_cookie {
         cookies.add_private(cookie);
     }
@@ -45,6 +55,13 @@ async fn user_login(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJa
     status
 }
 
+/// User Verify Route
+/// 
+/// Checks the value of the user_auth_token cookie and returns the user it is associated with
+/// 
+/// On Success:
+///  - Returns status 200
+///  - Returns JSON serialization of UserInfo type
 #[get("/user/verify")]
 async fn user_verify(
     db: UserDbConn,
@@ -71,12 +88,24 @@ async fn user_verify(
     }
 }
 
+/// User Logout Route
+/// 
+/// Deletes the user_auth_token cookie effectively "logging" the user out
+/// 
+/// Always returns status 200
 #[post("/user/logout")]
 fn user_logout(cookies: &CookieJar<'_>, _auth: UserAuthToken) -> Status {
     cookies.remove_private(Cookie::named("user_auth_token"));
     Status::Ok
 }
 
+/// User Register Route
+/// 
+/// Registers a new user given the provided form data
+/// 
+/// On Success
+///  - Return status 200
+///  - Set user_auth_token cookie (see User Login)
 #[post("/user/register", data="<auth>")]
 async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &CookieJar<'_>) -> Status {
     use diesel::result::Error::DatabaseError;
@@ -114,6 +143,15 @@ async fn user_register(db: UserDbConn, auth: Form<UserAuthForm>, cookies: &Cooki
 
 }
 
+/// List User Records Route
+/// 
+/// Query the records for the authenticated user
+/// 
+/// For query arg descriptions check the design doc
+/// 
+/// On Success:
+///  - Return Status 200
+///  - Return JSON serialized [MatchRecord] list
 #[get("/user/records?<limit>&<offset>&<before>&<after>&<sort_by>&<asc>&<filter>")]
 async fn user_records(
     db: UserDbConn,
@@ -126,6 +164,7 @@ async fn user_records(
     asc: Option<bool>,
     filter: Option<MatchQueryFilter>
 ) -> Result<Json<Records<MatchRecord>>, Status> {
+    // Get sort options (or use defaults)
     let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
     let asc = asc.unwrap_or_else(|| {
         match sort_by {
@@ -134,6 +173,7 @@ async fn user_records(
         }
     });
 
+    // Get offset if any
     let offset = offset.unwrap_or(0);
 
     db.run(move |c| {
@@ -163,6 +203,12 @@ async fn user_records(
     )
 }
 
+/// Add a record for a given user
+/// 
+/// Submits a record for the authenticated user using JSON request body data
+/// 
+/// On Success:
+///  - Return Status 200
 #[post("/user/records/add", format = "json", data = "<record>",)]
 async fn user_record_add(db: UserDbConn, record: Json<ClientMatchData>, auth_token: UserAuthToken, cookies: &CookieJar<'_>) -> Status {
     use diesel::result::Error::DatabaseError;
@@ -185,6 +231,15 @@ async fn user_record_add(db: UserDbConn, record: Json<ClientMatchData>, auth_tok
     }
 }
 
+/// List Game Records Route
+/// 
+/// Query game records
+/// 
+/// For query arg descriptions check the design doc
+/// 
+/// On Success:
+///  - Return Status 200
+///  - Return JSON serialized [MatchRecord] list
 #[get("/games/records?<limit>&<offset>&<before>&<after>&<sort_by>&<asc>&<filter>")]
 async fn game_records(
     db: UserDbConn,
@@ -197,6 +252,7 @@ async fn game_records(
     filter: Option<MatchQueryFilter>
 ) -> Result<Json<Records<MatchRecord>>, Status> {
 
+    // Get sort options (or use defaults)
     let sort_by = sort_by.unwrap_or(MatchQuerySortBy::StartTime);
     let asc = asc.unwrap_or_else(|| {
         match sort_by {
@@ -205,6 +261,7 @@ async fn game_records(
         }
     });
 
+    // Get offset if any
     let offset = offset.unwrap_or(0);
 
     db.run(move |c| {
@@ -233,6 +290,7 @@ async fn game_records(
     )
 }
 
+/// Returns all the routes to serve
 pub fn get_routes() -> Vec<rocket::Route> {
     routes![
         user_login,

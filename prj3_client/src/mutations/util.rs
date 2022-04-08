@@ -1,10 +1,12 @@
 use reqwest::Url;
 
+/// Util function for getting the base url of the server backend
 pub fn get_base_url() -> Url {
     let origin = web_sys::window().unwrap().location().origin().unwrap();
     Url::parse(&origin).unwrap()
 }
 
+/// API Error return types
 #[derive(Debug)]
 pub enum APIError {
     AuthenticationError,
@@ -43,6 +45,7 @@ impl From<reqwest::StatusCode> for APIError {
 
 }
 
+/// Client request builder helper function
 pub trait AppendQuery {
     fn query_pair<T: Into<String>, U: serde::Serialize>(self, label: T, data: Option<U>) -> reqwest::RequestBuilder;
 }

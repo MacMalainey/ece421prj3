@@ -92,7 +92,7 @@ fn list_users(conn: &SqliteConnection) {
         let mut offset = 0;
         let step = 10;
         loop {
-            let list = match users::find_users(conn, &id) {
+            let list = match users::find_users(conn, &id, 10, offset) {
                 Ok((users, total)) => PartialList {
                     items: users,
                     offset,

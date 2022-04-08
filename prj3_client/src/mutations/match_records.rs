@@ -5,11 +5,12 @@ use async_trait::async_trait;
 use bounce::prelude::*;
 use bounce::query::{Mutation, MutationResult, Query, QueryResult};
 
-use shared_types::types::{MatchQueryFilter, MatchQuerySortBy, MatchRecord, ToQueryPairs, ClientMatchData};
+use shared_types::types::{MatchQueryFilter, MatchQuerySortBy, MatchRecord, ToQueryPairs, ClientMatchData, Records};
 
 use super::util::*;
 use super::ServiceError;
 
+/// Options for a match query request
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct MatchRecordQueryOptions {
     pub limit: Option<i64>,
@@ -19,8 +20,9 @@ pub struct MatchRecordQueryOptions {
     pub asc: Option<bool>
 }
 
+/// Match Records Query
 #[derive(Debug, PartialEq)]
-pub struct MatchRecordQuery(pub Vec<MatchRecord>);
+pub struct MatchRecordQuery(pub Records<MatchRecord>);
 
 #[async_trait(?Send)]
 impl Query for MatchRecordQuery {
@@ -40,8 +42,9 @@ impl Query for MatchRecordQuery {
     }
 }
 
+/// Match Record Query for Currently Authenticated User
 #[derive(Debug, PartialEq)]
-pub struct UserMatchRecordQuery(pub Vec<MatchRecord>);
+pub struct UserMatchRecordQuery(pub Records<MatchRecord>);
 
 #[async_trait(?Send)]
 impl Query for UserMatchRecordQuery {
@@ -61,6 +64,7 @@ impl Query for UserMatchRecordQuery {
     }
 }
 
+/// Mutation for reporting a new match to the server backend
 #[derive(Debug, PartialEq)]
 pub struct UserMatchRecordMutation();
 
@@ -77,7 +81,7 @@ impl Mutation for UserMatchRecordMutation {
 
 }
 
-
+/// POST to /user/records/add with data
 pub async fn post_user_record(
     record: &ClientMatchData
 ) -> Result<(), APIError> {
@@ -94,13 +98,14 @@ pub async fn post_user_record(
     Ok(())
 }
 
+/// GET from /user/records using options
 pub async fn get_user_records(
     limit: Option<i64>,
     offset: Option<i64>,
     filters: &Option<MatchQueryFilter>,
     sort_by: Option<MatchQuerySortBy>,
     asc: Option<bool>
-) -> Result<Vec<MatchRecord>, APIError> {
+) -> Result<Records<MatchRecord>, APIError> {
     let endpoint_url = get_base_url().join("api/v1/user/records").unwrap();
 
     let client = reqwest::Client::new();
@@ -118,19 +123,20 @@ pub async fn get_user_records(
         .send()
         .await?
         .error_for_status()?
-        .json::<Vec<MatchRecord>>()
+        .json::<Records<MatchRecord>>()
         .await?;
 
     Ok(response)
 }
 
+/// GET from /games/records using options
 pub async fn get_records(
     limit: Option<i64>,
     offset: Option<i64>,
     filters: &Option<MatchQueryFilter>,
     sort_by: Option<MatchQuerySortBy>,
     asc: Option<bool>
-) -> Result<Vec<MatchRecord>, APIError> {
+) -> Result<Records<MatchRecord>, APIError> {
     let endpoint_url = get_base_url().join("api/v1/games/records").unwrap();
 
     let client = reqwest::Client::new();
@@ -148,7 +154,7 @@ pub async fn get_records(
         .send()
         .await?
         .error_for_status()?
-        .json::<Vec<MatchRecord>>()
+        .json::<Records<MatchRecord>>()
         .await?;
 
     Ok(response)

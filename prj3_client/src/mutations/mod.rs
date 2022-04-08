@@ -3,6 +3,7 @@ pub mod match_records;
 
 mod util;
 
+/// Service errors
 #[derive(Debug, PartialEq, Clone)]
 pub enum ServiceError {
     UnableToContactServer,
