@@ -1347,6 +1347,7 @@ dependencies = [
  "chrono",
  "crossterm",
  "diesel",
+ "libsqlite3-sys",
  "shared_types",
  "terminal-menu",
 ]
