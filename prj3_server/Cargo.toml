@@ -9,6 +9,7 @@ edition = "2021"
 rocket = { version = "0.5.0-rc.1", features = ["secrets", "json"] }
 rocket_sync_db_pools = { version = "0.1.0-rc.1", default-features = false, features = ["diesel_sqlite_pool"] }
 diesel = { version = "1.4.5", features = ["sqlite"] }
+libsqlite3-sys = { version = "0.22.2", features = ["bundled"] }
 chrono = { version = "0.4.19", features = ["serde"] }
 rand = "0.8.5"
 
