@@ -1344,6 +1344,7 @@ version = "0.1.0"
 dependencies = [
  "ansi_term",
  "chrono",
+ "crossterm",
  "diesel",
  "shared_types",
  "terminal-menu",

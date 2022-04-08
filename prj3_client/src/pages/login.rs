@@ -100,7 +100,7 @@ pub fn login() -> Html {
                 }).await;
 
                 match result {
-                    Ok(u) => {
+                    Ok(_) => {
                         credentials.set(
                             AuthCredentials::Verified(UserInfo {
                                 user_id

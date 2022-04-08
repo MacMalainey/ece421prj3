@@ -1,14 +1,15 @@
 #[macro_use] extern crate rocket;
 
+#[cfg(feature = "build_database")]
 use diesel::Connection;
 use diesel::SqliteConnection;
 
 use rocket_sync_db_pools::{diesel, database};
 
+mod routes;
+
 #[database("user_database")]
 pub struct UserDbConn(SqliteConnection);
-
-mod routes;
 
 #[launch]
 fn rocket() -> _ {

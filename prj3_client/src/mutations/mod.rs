@@ -12,7 +12,10 @@ pub enum ServiceError {
 impl std::fmt::Display for ServiceError {
 
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        todo!()
+        write!(f, "{}", match self {
+            ServiceError::UnableToContactServer => "unable to contact server",
+            ServiceError::InternalServerError => "internal server error"
+        })
     }
 
 }

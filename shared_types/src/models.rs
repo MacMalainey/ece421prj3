@@ -62,6 +62,10 @@ impl MatchRecordModel {
             result: self.result
         }
     }
+
+    pub fn get_id(&self) -> Option<i32> {
+        self.id
+    }
 }
 
 impl From<(UserAuthToken, ClientMatchData)> for MatchRecordModel {
@@ -72,6 +76,22 @@ impl From<(UserAuthToken, ClientMatchData)> for MatchRecordModel {
             id: None,
             user_id: Some(user_token.into_inner()),
             finished_at: Utc::now().naive_utc(),
+            game_id: record.game_id,
+            cpu_level: record.cpu_level,
+            duration: record.duration,
+            result: record.result
+        }
+    }
+}
+
+impl From<(UserAuthToken, MatchRecord)> for MatchRecordModel {
+    
+    fn from(f: (UserAuthToken, MatchRecord)) -> Self {
+        let (user_token, record) = f;
+        MatchRecordModel {
+            id: None,
+            user_id: Some(user_token.into_inner()),
+            finished_at: record.finished_at.naive_utc(),
             game_id: record.game_id,
             cpu_level: record.cpu_level,
             duration: record.duration,

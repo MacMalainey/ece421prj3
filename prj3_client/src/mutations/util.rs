@@ -1,5 +1,3 @@
-use shared_types::types::*;
-
 use reqwest::Url;
 
 pub fn get_base_url() -> Url {

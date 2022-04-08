@@ -1,3 +1,4 @@
+#[cfg(feature = "run_migrations")]
 use diesel::sqlite::SqliteConnection;
 
 type Result<T> = std::result::Result<T, diesel::result::Error>;
@@ -37,6 +38,25 @@ pub mod users {
 
         user.insert_into(users).execute(conn).map(|_| ())
     }
+
+    pub fn delete(conn: &SqliteConnection, id: &str) -> Result<()> {
+        use crate::schema::users::dsl::*;
+
+        diesel::delete(users.filter(user_id.eq(id))).execute(conn).map(|_| ())
+    }
+
+    pub fn find_users(conn: &SqliteConnection, id_prefix: &str) -> Result<(Vec<String>, i64)> {
+        use crate::schema::users::dsl::*;
+
+        users.select(user_id).filter(user_id.like(&format!("{}%", id_prefix)))
+            .load::<String>(conn)
+            .and_then(|list| {
+                users.filter(user_id.like(&format!("{}%", id_prefix)))
+                .count()
+                .first::<i64>(conn)
+                .map(|count| (list, count))
+            })
+    }
 }
 
 pub mod match_records {
@@ -54,6 +74,12 @@ pub mod match_records {
         use crate::schema::match_records::dsl::*;
 
         record.insert_into(match_records).execute(conn).map(|_| ())
+    }
+
+    pub fn delete(conn: &SqliteConnection, rid: i32) -> Result<()> {
+        use crate::schema::match_records::dsl::*;
+
+        diesel::delete(match_records.filter(id.eq(rid))).execute(conn).map(|_| ())
     }
 
     pub fn find_by_user(
