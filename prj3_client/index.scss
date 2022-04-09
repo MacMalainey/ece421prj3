@@ -78,6 +78,7 @@
   display: grid;
   padding: 10px;
   align-items: center;
+  position:relative;
 }
 
 .grid_cols_5 {
@@ -105,4 +106,24 @@
     display: inline-block;
     margin-right: 8px;
   }
+}
+
+.col-button {
+  margin:auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  height: 100%;
+  width: 100%;
+}
+
+.col-button:hover {
+  background-color: white;
+  opacity: 20%;
+}
+
+.col-button-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
 }

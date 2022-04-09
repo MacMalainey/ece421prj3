@@ -58,9 +58,14 @@ impl Component for PlayScreen {
                 <div class="card mt-2">
                     {
                         self.render_grid(
-                        ctx.props().selected_board_size.clone(),
-                        ctx.props().board_state.clone(),
-                        ctx.props().selected_disc_color.clone())
+                            ctx.props().selected_board_size.clone(),
+                            ctx.props().board_state.clone(),
+                            ctx.props().selected_disc_color.clone()
+                        )
+                    } {
+                        self.render_col_buttons(
+                            ctx.props().selected_board_size.clone(),
+                        )
                     }
                 </div>
             </div>
@@ -108,6 +113,26 @@ impl PlayScreen {
                                         <div class="circle" style={"background-color: white"}/>
                                     </div>
                                 }
+                            }
+                        }).collect::<Html>()
+                    }
+                </div>
+            </>
+        }
+    }
+
+    fn render_col_buttons(&self, selected_board_size: String) -> Html {
+        let split:  Vec<&str> = selected_board_size.split("x").collect();
+        let cols = split[0];
+        // let rows = split[1];
+        let iterator: Vec<i32> = (0..cols.parse().unwrap()).collect();
+        html! {
+            <>
+                <div class={"col-button-container grid-container grid_cols_".to_string() + &cols.to_string()}>
+                    {
+                        iterator.iter().enumerate().map(|(i, _)| {
+                            html! {
+                                <div class="col-button"/>
                             }
                         }).collect::<Html>()
                     }
