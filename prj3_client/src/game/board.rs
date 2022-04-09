@@ -27,18 +27,18 @@ pub struct AIConfiguration {
 }
 
 pub const AI_EASY: AIConfiguration = AIConfiguration {
-    search_depth: 2,
+    search_depth: 1,
     random_iterations: 5,
 };
 
 pub const AI_MEDIUM: AIConfiguration = AIConfiguration {
-    search_depth: 3,
-    random_iterations: 1000,
+    search_depth: 2,
+    random_iterations: 500,
 };
 
 pub const AI_HARD: AIConfiguration = AIConfiguration {
-    search_depth: 4,
-    random_iterations: 3000,
+    search_depth: 3,
+    random_iterations: 1500,
 };
 
 #[derive(Debug)]
