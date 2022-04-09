@@ -16,7 +16,6 @@ pub struct Toot {
     selected_disc_color: String,
     selected_board_size: String,
     should_start: bool,
-    board_state: Vec<(i32, String)>,
 }
 
 pub enum Msg {
@@ -41,11 +40,7 @@ impl Component for Toot {
             selected_difficulty: "Easy".to_string(),
             selected_board_size: "6x4".to_string(),
             selected_disc_color: "#FF8E8E".to_string(),
-            should_start: false,
-            board_state: vec![(0, "".to_string()), (0, "".to_string()),  (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (1, "O".to_string()), (2, "T".to_string()), (0, "".to_string())]
+            should_start: false
         }
     }
 
@@ -64,13 +59,12 @@ impl Component for Toot {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {{if self.should_start {
             html! {
-                <PlayScreen
-                    name={self.name.clone()}
-                    selected_difficulty = {self.selected_difficulty.clone()}
-                    selected_board_size = {self.selected_board_size.clone()}
-                    selected_disc_color = {self.selected_disc_color.clone()}
-                    board_state = {self.board_state.clone()}
-                />
+                // <PlayScreen
+                //     name={self.name.clone()}
+                //     selected_difficulty = {self.selected_difficulty.clone()}
+                //     selected_board_size = {self.selected_board_size.clone()}
+                //     selected_disc_color = {self.selected_disc_color.clone()}
+                // />
             }
         } else {
             html! {

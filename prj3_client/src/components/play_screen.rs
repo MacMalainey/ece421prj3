@@ -1,5 +1,7 @@
-use std::fmt::format;
 use yew::prelude::*;
+use crate::game;
+
+use crate::game::*;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
@@ -7,21 +9,49 @@ pub struct Props {
     pub selected_difficulty: String,
     pub selected_disc_color: String,
     pub selected_board_size: String,
-    pub board_state: Vec<(i32, String)>,
+    pub columns: String,
+    pub rows: String,
 }
 
 pub struct PlayScreen {
+    pub game: Game,
+    pub board_state: Vec<(i32, String)>,
 }
 
-pub enum Msg {
-}
+pub enum Msg {}
 
 impl Component for PlayScreen {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self{
+    fn create(ctx: &Context<Self>) -> Self {
+
+        let ai = match ctx.props().selected_difficulty.as_str() {
+            "Easy" => {
+                game::AI_EASY
+            },
+            "Medium" => {
+                game::AI_MEDIUM
+            },
+            "Hard" => {
+                game::AI_HARD
+            },
+            _ => {
+                game::AI_EASY
+            }
+        };
+
+        let game = Game::new(
+            ctx.props().rows.clone().parse::<usize>().unwrap(),
+            ctx.props().columns.clone().parse::<usize>().unwrap(),
+            ai
+        );
+
+        let board_state = game.get_board_state();
+
+        Self {
+            game,
+            board_state,
         }
     }
 
@@ -59,7 +89,7 @@ impl Component for PlayScreen {
                     {
                         self.render_grid(
                             ctx.props().selected_board_size.clone(),
-                            ctx.props().board_state.clone(),
+                            self.board_state.clone(),
                             ctx.props().selected_disc_color.clone()
                         )
                     } {
@@ -82,7 +112,7 @@ impl PlayScreen {
         }
     }
     fn render_grid(&self, selected_board_size: String, board_state: Vec<(i32, String)>, selected_disc_color: String) -> Html {
-        let split:  Vec<&str> = selected_board_size.split("x").collect();
+        let split: Vec<&str> = selected_board_size.split("x").collect();
         let cols = split[0];
         // let rows = split[1];
         html! {
@@ -122,7 +152,7 @@ impl PlayScreen {
     }
 
     fn render_col_buttons(&self, selected_board_size: String) -> Html {
-        let split:  Vec<&str> = selected_board_size.split("x").collect();
+        let split: Vec<&str> = selected_board_size.split("x").collect();
         let cols = split[0];
         // let rows = split[1];
         let iterator: Vec<i32> = (0..cols.parse().unwrap()).collect();
