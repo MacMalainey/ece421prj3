@@ -16,6 +16,16 @@ use pages::{
 
 use stores::auth::AuthCredentials;
 
+#[derive(Properties, PartialEq)]
+struct AppLaunchProps {
+    session_user: Option<shared_types::types::UserInfo>
+}
+
+#[derive(Properties, PartialEq)]
+struct NavBarProps {
+    session_user: Option<shared_types::types::UserInfo>
+}
+
 /// Routes
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -48,11 +58,11 @@ fn switch(routes: &Route) -> Html {
 
 /// Top level component
 #[function_component(App)]
-fn app() -> Html {
+fn app(props: &AppLaunchProps) -> Html {
     html! {
         <BrowserRouter>
             <BounceRoot>
-                <NavBar/>
+                <NavBar session_user={props.session_user.clone()}/>
                 <main>
                     <Switch<Route> render={Switch::render(switch)} />
                 </main>
@@ -63,9 +73,22 @@ fn app() -> Html {
 
 /// Navigation bar component
 #[function_component(NavBar)]
-fn nav_bar() -> Html {
+fn nav_bar(props: &NavBarProps) -> Html {
 
     let credentials = use_atom::<AuthCredentials>();
+
+    {
+        let credentials = credentials.clone();
+        use_effect_with_deps(
+            move |session_user| {
+                if let Some(user) = session_user {
+                    credentials.set(AuthCredentials::Verified(user.clone()))
+                };
+                || {}
+            },
+            props.session_user.clone()
+        )
+    }
 
     let user = match *credentials {
         AuthCredentials::Verified(ref info) => Some(info.user_id.clone()),
@@ -103,10 +126,23 @@ fn nav_bar() -> Html {
                         if let Some(username) = user {
                             let on_logout = 
                                 Callback::from(move |_| {
+                                    let credentials = credentials.clone();
                                     // Log client out
-                                    // todo: do this through the user
-                                    wasm_cookies::delete("user_auth_token");
-                                    credentials.set(AuthCredentials::Guest.into());
+                                    wasm_bindgen_futures::spawn_local(async move {
+                                        let res = mutations::auth::logout().await;
+
+                                        match res {
+                                            Ok(()) => credentials.set(AuthCredentials::Guest.into()),
+                                            Err(err) => {
+                                                log::error!("{:#?}", err);
+                                                web_sys::window()
+                                                    .unwrap()
+                                                    .alert_with_message("Error occured, try again later")
+                                                    .unwrap()
+                                            }
+                                        }
+                                        
+                                    });
                                 });
                             html! {
                                 <div class="navbar-item has-dropdown is-hoverable">
@@ -135,7 +171,13 @@ fn nav_bar() -> Html {
 
 /// Entry point
 fn main() {
-    // todo: VERIFY USER AUTH COOKIE BEFORE MOUNTING APP
     wasm_logger::init(wasm_logger::Config::new(log::Level::Debug));
-    yew::start_app::<App>();
+
+    wasm_bindgen_futures::spawn_local(async {
+        let session_user = mutations::auth::verify().await;
+
+        log::debug!("Session: {:#?}", session_user);
+    
+        yew::start_app_with_props::<App>(AppLaunchProps{ session_user });
+    })
 }

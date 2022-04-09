@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use bounce::prelude::*;
 use bounce::query::{Mutation, MutationResult};
 
-use shared_types::types::{UserAuthForm};
+use shared_types::types::{UserAuthForm, UserInfo};
 
 use super::util::*;
 
@@ -116,15 +116,28 @@ async fn login(credentials: &UserAuthForm) -> Result<(), APIError> {
     Ok(())
 }
 
-// async fn logout() -> Result<(), APIError> {
-//     let endpoint_url = get_base_url().join("api/v1/user/logout").unwrap();
+/// Run API call for verifying cached auth token
+pub async fn verify() -> Option<UserInfo> {
+    let endpoint_url = get_base_url().join("api/v1/user/verify").unwrap();
 
-//     let client = reqwest::Client::new();
+    reqwest::get(endpoint_url)
+        .await
+        .and_then(|resp| resp.error_for_status())
+        .ok()?
+        .json::<UserInfo>()
+        .await
+        .ok()
+}
 
-//     client.post(endpoint_url)
-//         .send()
-//         .await?;
+pub async fn logout() -> Result<(), APIError> {
+    let endpoint_url = get_base_url().join("api/v1/user/logout").unwrap();
 
-//     Ok(())
-// }
+    let client = reqwest::Client::new();
+
+    client.post(endpoint_url)
+        .send()
+        .await?;
+
+    Ok(())
+}
 
