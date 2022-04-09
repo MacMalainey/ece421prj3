@@ -2,6 +2,7 @@ use bounce::prelude::*;
 
 use shared_types::types::UserInfo;
 
+/// Authentication Credential information
 #[derive(Debug, PartialEq, Atom)]
 pub enum AuthCredentials {
     Verified(UserInfo),

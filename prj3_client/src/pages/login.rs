@@ -15,24 +15,31 @@ use crate::mutations::auth::*;
 use crate::stores::auth::*;
 use crate::Route;
 
+/// State for login page
 #[derive(PartialEq)]
 struct LoginState {
     is_on_login: bool,
     error: Option<String>,
 }
 
+/// Login page component
 #[function_component(Login)]
 pub fn login() -> Html {
+    // Get state
     let state = use_state_eq(|| LoginState {
         is_on_login: true,
         error: None
     });
 
+    // Mutation for authentication
     let auth_mutation = use_mutation_value::<AuthMutation>();
+    // Credentials we have gotten
     let credentials = use_atom::<AuthCredentials>();
 
-    let history = use_history();
+    // For redirect when complete
+    let history = use_history().unwrap();
 
+    // CSS stuff
     let login_class;
     let signup_class;
     let button_text;
@@ -46,12 +53,15 @@ pub fn login() -> Html {
         button_text = "Create Account"
     }
 
+    // Disable if we are running the mutation or if we are already logged in
     let disabled = if let AuthCredentials::Verified(_) = *credentials {
+        history.push(Route::Home); // If we are logged in we need to re-route
         true
     } else {
         auth_mutation.status() == QueryStatus::Loading
     };
 
+    // Callback for switching to login
     let switch_to_login = {
         let state = state.clone();
         Callback::from(move |_| state.set(LoginState {
@@ -60,6 +70,7 @@ pub fn login() -> Html {
         }))
     };
 
+    // Callback for switching to register
     let switch_to_register = {
         let state = state.clone();
         Callback::from(move |_| state.set(LoginState {
@@ -68,46 +79,55 @@ pub fn login() -> Html {
         }))
     };
 
+    // Callback when form is to be submitted
     let submit_form = {
         let state = state.clone();
         Callback::from(move |e: web_sys::FocusEvent| {
             e.prevent_default();
 
+            // Get form data
             let data = web_sys::FormData::new_with_form(
                 e.target().unwrap().dyn_ref::<web_sys::HtmlFormElement>().unwrap()
             ).unwrap();
 
+            // Convert to our form type
             let form = UserAuthForm {
                 user_id: data.get("username").as_string().unwrap(),
                 password:  data.get("password").as_string().unwrap()
             };
 
+            // Get login type (login or register)
             let login_as = if state.is_on_login {
                 LoginAs::RegisteredUser
             } else {
                 LoginAs::NewUser
             };
 
+            // Register the mutation to be ran when ready
             let auth_mutation = auth_mutation.clone();
             let state = state.clone();
             let history = history.clone();
             let credentials = credentials.clone();
             spawn_local(async move {
+                // Run mutation
                 let user_id = form.user_id.clone();
                 let result = auth_mutation.run(AuthRequest {
                     data: form,
                     login_as
                 }).await;
 
+                // Parse result
                 match result {
-                    Ok(u) => {
+                    // Update credentials store (sadly we cannot update stores from a mutation)
+                    Ok(_) => {
                         credentials.set(
                             AuthCredentials::Verified(UserInfo {
                                 user_id
                             })
                         );
-                        history.unwrap().push(Route::Home)
+                        history.push(Route::Home)
                     },
+                    // Handle error
                     Err(err) => state.set(
                         LoginState {
                             is_on_login: state.is_on_login,
@@ -124,6 +144,7 @@ pub fn login() -> Html {
         })
     };
 
+    // Reset errors if the form gets any input
     let on_form_input = {
         let state = state.clone();
         Callback::from(move |_| {

@@ -66,6 +66,23 @@
   \end{description}
 
   \pagebreak
+  \item[GET] \mintinline{text}|/api/v1/user/verify/|
+  \begin{description}
+    \item[Description] \hfill \\
+    Verifies that the client's auth cookie matches a known user
+    \item[Request Cookies] \hfill \\
+    CONTAINS \mintinline{text}{user_auth_token}
+    \item[Response Status] \hfill \\
+    200 - If successful \\
+    404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Response Body Type] \hfill \\
+    JSON
+    \item[Response Body] \hfill \\
+    Username of authenticated user
+    \item[Known Issues] 
+    \item Need to verify this removes the cookie in browser
+  \end{description}
+  
   \item[POST] \mintinline{text}|/api/v1/user/register/|
   \begin{description}
     \item[Description] \hfill \\
@@ -133,10 +150,24 @@
     \mintinline{text}|limit (default = 10)| \\
     Number of records to return at once \vspace{0.5em} \\
     \mintinline{text}|offset (default = 0)| \\
-    Number of records to skip (for pagination)
+    Number of records to skip (for pagination) \vspace{0.5em} \\
+    \mintinline{text}|before| \\
+    Returns matches that happened before (UTC timestamp in seconds) \vspace{0.5em} \\
+    \mintinline{text}|after| \\
+    Returns matches that happened after (UTC timestamp in seconds) \vspace{0.5em} \\
+    \mintinline{text}|sort_by (default = starttime)| \\
+    Value to sort by, can be either \mintinline{text}{duration} or \mintinline{text}{starttime} \vspace{0.5em} \\
+    \mintinline{text}|asc| \\
+    Sort direction, defaults to false unless using \mintinline{text}{sort_by=duration} \vspace{0.5em} \\
+    \mintinline{text}|filter| \\
+    Only returns elements that match the filter specification (see examples for more info)
     \item[Response Status] \hfill \\
     200 - If successful \\
     404 - If header doesn't contain cookie % CHECK IF TRUE, IF IT IS WE SHOULD CHANGE THE RETURN TYPE
+    \item[Response Body Format] \hfill \\
+    JSON
+    \item[Response Body] \hfill \\
+    List of match records
     \item[Known Issues] 
     \item Does not support any form of filtering or sorting other than listed
     \item Handles case where user doesn't exist by returning empty list instead of an error status
@@ -162,11 +193,15 @@
     \mintinline{text}|sort_by (default = starttime)| \\
     Value to sort by, can be either \mintinline{text}{duration} or \mintinline{text}{starttime} \vspace{0.5em} \\
     \mintinline{text}|asc| \\
-    Sort direction, defaults to false unless using \mintinline{text}{sort_by=duration} \vspace{0.5em} \\
+    Sort direction, defaults to false unless using \mintinline{text}{sort_by=duration} \vspace{0.5em} \\ \\
     \mintinline{text}|filter| \\
     Only returns elements that match the filter specification (see examples for more info)
     \item[Response Status] \hfill \\
     200 - If successful
+    \item[Response Body Format] \hfill \\
+    JSON
+    \item[Response Body] \hfill \\
+    List of match records
     \item[Known Issues] 
     \item Does not have max and min values for \mintinline{text}{limit}
     \item Should include a count of how many records there are in total

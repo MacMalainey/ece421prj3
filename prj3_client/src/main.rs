@@ -16,6 +16,7 @@ use pages::{
 
 use stores::auth::AuthCredentials;
 
+/// Routes
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
@@ -33,6 +34,7 @@ enum Route {
     NotFound,
 }
 
+/// Switch algorithm for [Route]
 fn switch(routes: &Route) -> Html {
     match routes {
         Route::Home => html! { <Home/> },
@@ -44,6 +46,7 @@ fn switch(routes: &Route) -> Html {
     }
 }
 
+/// Top level component
 #[function_component(App)]
 fn app() -> Html {
     html! {
@@ -58,6 +61,7 @@ fn app() -> Html {
     }
 }
 
+/// Navigation bar component
 #[function_component(NavBar)]
 fn nav_bar() -> Html {
 
@@ -99,6 +103,8 @@ fn nav_bar() -> Html {
                         if let Some(username) = user {
                             let on_logout = 
                                 Callback::from(move |_| {
+                                    // Log client out
+                                    // todo: do this through the user
                                     wasm_cookies::delete("user_auth_token");
                                     credentials.set(AuthCredentials::Guest.into());
                                 });
@@ -127,7 +133,9 @@ fn nav_bar() -> Html {
     }
 }
 
+/// Entry point
 fn main() {
+    // todo: VERIFY USER AUTH COOKIE BEFORE MOUNTING APP
     wasm_logger::init(wasm_logger::Config::new(log::Level::Debug));
     yew::start_app::<App>();
 }

@@ -1,62 +1,12 @@
-use shared_types::types::*;
-
 use reqwest::Url;
 
+/// Util function for getting the base url of the server backend
 pub fn get_base_url() -> Url {
     let origin = web_sys::window().unwrap().location().origin().unwrap();
     Url::parse(&origin).unwrap()
 }
 
-pub async fn get_user_records(limit: Option<i64>, offset: Option<i64>) -> Result<Vec<MatchRecord>, APIError> {
-    let endpoint_url = get_base_url().join("api/v1/user/records").unwrap();
-
-    let client = reqwest::Client::new();
-
-    let response = client.get(endpoint_url)
-        .query_pair("offset", offset)
-        .query_pair("limit", limit)
-        .send()
-        .await?;
-
-    if !response.status().is_success() {
-        Err(APIError::from(response.status()))
-    } else {
-        let data = response.json::<Vec<MatchRecord>>().await?;
-    
-        Ok(data)
-    }
-    
-}
-
-pub async fn get_records(
-    limit: Option<i64>,
-    offset: Option<i64>,
-    filters: Option<MatchQueryFilter>,
-    sort_by: Option<MatchQuerySortBy>,
-    asc: Option<bool>
-) -> Result<Vec<MatchRecord>, APIError> {
-    let endpoint_url = get_base_url().join("api/v1/games/records").unwrap();
-
-    let client = reqwest::Client::new();
-
-    let response = client.get(endpoint_url)
-        .query_pair("offset", offset)
-        .query_pair("limit", limit)
-        .query_pair("sort_by", sort_by)
-        .query(
-            &filters
-                .map(|f| f.query_pairs())
-                .unwrap_or(vec![])
-        )
-        .query_pair("asc", asc)
-        .send()
-        .await?
-        .json::<Vec<MatchRecord>>()
-        .await?;
-
-    Ok(response)
-}
-
+/// API Error return types
 #[derive(Debug)]
 pub enum APIError {
     AuthenticationError,
@@ -95,7 +45,8 @@ impl From<reqwest::StatusCode> for APIError {
 
 }
 
-trait AppendQuery {
+/// Client request builder helper function
+pub trait AppendQuery {
     fn query_pair<T: Into<String>, U: serde::Serialize>(self, label: T, data: Option<U>) -> reqwest::RequestBuilder;
 }
 

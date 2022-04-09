@@ -9,6 +9,7 @@ use shared_types::types::{UserAuthForm};
 
 use super::util::*;
 
+/// Error type for Auth APIs
 #[derive(Debug, PartialEq, Clone)]
 pub enum AuthError {
     InvalidCredentials,
@@ -37,18 +38,21 @@ impl std::error::Error for AuthError {
     }
 }
 
+/// Specification to login as a new or registered user
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum LoginAs {
     NewUser,
     RegisteredUser
 }
 
+/// Auth request data
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct AuthRequest {
     pub data: UserAuthForm,
     pub login_as: LoginAs,
 }
 
+/// Mutation for logging in, registering, or logging out a user
 #[derive(Debug, PartialEq)]
 pub struct AuthMutation();
 
@@ -82,6 +86,7 @@ impl Mutation for AuthMutation {
 
 }
 
+/// Run API call for registering user
 async fn register(credentials: &UserAuthForm) -> Result<(), APIError> {
     let endpoint_url = get_base_url().join("api/v1/user/register").unwrap();
 
@@ -96,6 +101,7 @@ async fn register(credentials: &UserAuthForm) -> Result<(), APIError> {
     Ok(())
 }
 
+/// Run API call for logging in user
 async fn login(credentials: &UserAuthForm) -> Result<(), APIError> {
     let endpoint_url = get_base_url().join("api/v1/user/login").unwrap();
 

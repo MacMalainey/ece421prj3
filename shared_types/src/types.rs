@@ -18,6 +18,7 @@ use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Utc};
 use chrono::serde::ts_seconds;
 
+/// Game type
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
@@ -53,6 +54,7 @@ where
     }
 }
 
+/// CPU level
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
@@ -90,6 +92,7 @@ where
     }
 }
 
+/// Match Result
 #[derive(Debug, Clone, Hash, Eq, Copy, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "diesel", derive(FromSqlRow, AsExpression))]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
@@ -127,13 +130,16 @@ where
     }
 }
 
-#[derive(Clone, Copy, Serialize)]
+/// Sort type for finding match record query
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "rocket", derive(FromFormField))]
 pub enum MatchQuerySortBy {
     StartTime,
     Duration,
 }
 
+/// Filters for match query
+#[derive(Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "rocket", derive(FromForm))]
 pub struct MatchQueryFilter {
     pub result: Vec<MatchResult>,
@@ -143,9 +149,9 @@ pub struct MatchQueryFilter {
 
 impl ToQueryPairs for MatchQueryFilter {
     type Output = (String, String);
-    fn query_pairs(self) -> Vec<Self::Output> {
+    fn query_pairs(&self) -> Vec<Self::Output> {
         use itertools::Itertools;
-        self.result.into_iter()
+        self.result.iter()
         .unique()
         .map(|value| ("filter.result", match value {
             MatchResult::Loss => "loss",
@@ -153,7 +159,7 @@ impl ToQueryPairs for MatchQueryFilter {
             MatchResult::Win => "win"
         }))
         .chain(
-            self.game.into_iter()
+            self.game.iter()
             .unique()
             .map(|value| ("filter.game", match value {
                 GameType::Connect4 => "connect4",
@@ -161,7 +167,7 @@ impl ToQueryPairs for MatchQueryFilter {
             }))
         )
         .chain(
-            self.level.into_iter()
+            self.level.iter()
             .unique()
             .map(|value| ("filter.level", match value {
                 CpuLevel::Easy => "easy",
@@ -174,6 +180,7 @@ impl ToQueryPairs for MatchQueryFilter {
     }
 }
 
+/// User auth token cookie
 #[derive(Debug)]
 pub struct UserAuthToken(String);
 
@@ -207,7 +214,8 @@ impl<'r> FromRequest<'r> for UserAuthToken {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+/// Match record data reported from client
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct ClientMatchData {
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
@@ -215,7 +223,8 @@ pub struct ClientMatchData {
     pub result: MatchResult
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+/// Match record taken from database
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct MatchRecord {
     pub user_id: Option<String>,
     #[serde(with = "ts_seconds")]
@@ -226,13 +235,15 @@ pub struct MatchRecord {
     pub result: MatchResult
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+/// Partial list data for query from database
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct Records<T> {
     pub records: Vec<T>,
     pub offset: i64,
     pub total_count: i64
 }
 
+/// User authentication form
 #[derive(Debug, Eq, PartialEq, Hash, Serialize)]
 #[cfg_attr(feature = "rocket", derive(FromForm))]
 pub struct UserAuthForm {
@@ -240,11 +251,13 @@ pub struct UserAuthForm {
     pub password: String,
 }
 
+/// Client helper function
 pub trait ToQueryPairs {
     type Output: serde::Serialize;
-    fn query_pairs(self) -> Vec<Self::Output>;
+    fn query_pairs(&self) -> Vec<Self::Output>;
 }
 
+/// User information as reported by server
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct UserInfo {
     pub user_id: String
