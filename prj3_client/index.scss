@@ -39,7 +39,7 @@
   }
 
   .background-3 {
-    background-color: #CED9F0;
+    background-color: #617DB2;
   }
 
   .background-4 {
@@ -64,7 +64,66 @@
   }
 
   .circle {
-    height: 50px;
-    width: 50px;
+    height: 60px;
+    width: 60px;
     border-radius: 50%;
+    div {
+      text-align: center;
+      line-height: 60px;
+      font-size: 22px;
+    }
   }
+
+.grid-container {
+  display: grid;
+  padding: 10px;
+  align-items: center;
+  position:relative;
+}
+
+.grid_cols_5 {
+  grid-template-columns: auto auto auto auto auto;
+}
+
+.grid_cols_6 {
+  grid-template-columns: auto auto auto auto auto auto;
+}
+
+.grid_cols_7 {
+  grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+.grid-item {
+  margin:auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.in-game-player-info {
+  display: inline-block;
+  width: 180px;
+  div {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}
+
+.col-button {
+  margin:auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  height: 100%;
+  width: 100%;
+}
+
+.col-button:hover {
+  background-color: white;
+  opacity: 20%;
+}
+
+.col-button-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+}

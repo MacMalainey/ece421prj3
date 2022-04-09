@@ -1,12 +1,12 @@
 use yew::prelude::*;
 
-#[derive(Clone, Debug, Eq, PartialEq, Properties)]
+#[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
     pub title: String,
     pub options: Vec<String>,
     pub name: String,
     pub is_discs: bool,
-    pub should_start: bool
+    pub update: Callback<String>,
 }
 
 pub struct RadioGroup {
@@ -36,6 +36,8 @@ impl Component for RadioGroup {
                 let selected_str = opt[i].clone();
                 self.selected = selected_str;
                 self.index = i;
+                let update = ctx.props().update.clone();
+                update.emit(self.selected.clone());
                 true
             }
         }
@@ -46,9 +48,6 @@ impl Component for RadioGroup {
         let title = ctx.props().title.clone();
         let options = ctx.props().options.clone();
         let is_discs = ctx.props().is_discs.clone();
-
-        // if ctx.props().should_start.clone() {
-        // }
 
         html! {
             <>
