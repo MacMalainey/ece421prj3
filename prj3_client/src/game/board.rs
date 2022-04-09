@@ -27,8 +27,8 @@ pub struct AIConfiguration {
 }
 
 pub const AI_EASY: AIConfiguration = AIConfiguration {
-    search_depth: 1,
-    random_iterations: 5,
+    search_depth: 2,
+    random_iterations: 2,
 };
 
 pub const AI_MEDIUM: AIConfiguration = AIConfiguration {
