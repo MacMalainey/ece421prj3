@@ -39,7 +39,7 @@
   }
 
   .background-3 {
-    background-color: #CED9F0;
+    background-color: #617DB2;
   }
 
   .background-4 {
@@ -64,7 +64,27 @@
   }
 
   .circle {
-    height: 50px;
-    width: 50px;
+    height: 60px;
+    width: 60px;
     border-radius: 50%;
   }
+
+.grid-container {
+  display: grid;
+  padding: 10px;
+  align-items: center;
+}
+
+.grid_cols_5 {
+  grid-template-columns: auto auto auto auto auto;
+}
+
+.grid_cols_7 {
+  grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+.grid-item {
+  margin:auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}

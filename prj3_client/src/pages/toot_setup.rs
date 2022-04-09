@@ -9,10 +9,18 @@ pub struct TootSetup {
     difficulties: Vec<String>,
     board_sizes: Vec<String>,
     disc_colors: Vec<String>,
+    selected_difficulty: String,
+    selected_disc_color: String,
+    selected_board_size: String,
+    should_start: bool,
+}
+
+pub enum Msg {
+    StartPressed([String; 3]),
 }
 
 impl Component for TootSetup {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
@@ -25,20 +33,43 @@ impl Component for TootSetup {
                         "Try to spell TOOT or OTTO based on your winning combination, either horizontally or vertically or diagonally".to_string()],
             difficulties: vec!["Easy".to_string(), "Medium".to_string(), "Hard".to_string()],
             board_sizes: vec!["5x4".to_string(), "7x6".to_string()],
-            disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "#9284CC".to_string(), "#000000".to_string()],
+            disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
+            selected_difficulty: "Easy".to_string(),
+            selected_disc_color: "5x4".to_string(),
+            selected_board_size: "#FF8E8E".to_string(),
+            should_start: false
         }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
-        html! {
-            <GameSetup
-                name = {self.name.clone()}
-                steps = {self.steps.clone()}
-                description = {self.description.clone()}
-                difficulties = {self.difficulties.clone()}
-                board_sizes = {self.board_sizes.clone()}
-                disc_colors = {self.disc_colors.clone()}
-            />
+    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
+        match _msg {
+            Msg::StartPressed(selections) => {
+                self.selected_difficulty = selections[0].clone();
+                self.selected_board_size = selections[1].clone();
+                self.selected_disc_color = selections[2].clone();
+                self.should_start = true;
+                true
+            }
         }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        html! {{if self.should_start {
+            html! {
+                <div/>
+            }
+        } else {
+            html! {
+                <GameSetup
+                    name = {self.name.clone()}
+                    steps= {self.steps.clone()}
+                    description = {self.description.clone()}
+                    difficulties = {self.difficulties.clone()}
+                    board_sizes = {self.board_sizes.clone()}
+                    disc_colors = {self.disc_colors.clone()}
+                    start_pressed = {ctx.link().callback(Msg::StartPressed).clone()}
+                />
+            }
+        }}}
     }
 }
