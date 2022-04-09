@@ -9,6 +9,7 @@ mod pages;
 mod components;
 mod mutations;
 mod stores;
+mod game;
 
 use pages::{
     connect_4::Connect4, home::Home, login::Login, page_not_found::PageNotFound, toot::Toot
