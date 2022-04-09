@@ -11,7 +11,7 @@ mod mutations;
 mod stores;
 
 use pages::{
-    connect_4::Connect4, home::Home, login::Login, page_not_found::PageNotFound, toot::Toot
+    connect_4::Connect4, home::Home, login::Login, page_not_found::PageNotFound, toot::Toot, leaderboard::Leaderboard
 };
 
 use stores::auth::AuthCredentials;
@@ -39,7 +39,7 @@ fn switch(routes: &Route) -> Html {
     match routes {
         Route::Home => html! { <Home/> },
         Route::Login => html! { <Login/> },
-        Route::Leaderboard => html! { <PageNotFound/> },
+        Route::Leaderboard => html! { <Leaderboard/> },
         Route::Connect4 => html! { <Connect4/> },
         Route::TootOtto => html! { <Toot/> },
         Route::NotFound => html! { <PageNotFound/> },
