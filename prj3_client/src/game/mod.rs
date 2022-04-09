@@ -47,7 +47,7 @@ impl Game {
 
     /// Check if a win or tie has occurred
     /// player is the player that just performed a move
-    pub fn check_state(&mut self, player: u32) {
+    pub fn check_state(&mut self, player: u32) -> GameState {
         if self.board.check_if_won(player) {
             self.state = GameState::Win(player);
         } else if self.board.check_if_no_more_moves() {
@@ -55,17 +55,23 @@ impl Game {
         } else {
             self.state = GameState::Running;
         }
+
+        self.state
     }
 
     /// Begin process for player turn
-    pub fn begin_player_turn(&mut self) {
-        let column_selection = 0;
-        self.board.place_at_column(column_selection, PLAYER_ID);
-        self.check_state(PLAYER_ID);
+    /// Returns true on success
+    pub fn player_turn(&mut self, column_selection: usize) -> bool {
+        if self.board.check_column_selection(column_selection as isize) == ColumnSelectionResult::Valid {
+            self.board.place_at_column(column_selection, PLAYER_ID);
+            return true;
+        }
+
+        false
     }
 
     /// Begin process for AI turn
-    pub fn begin_ai_turn(&mut self) {
+    pub fn ai_turn(&mut self) {
         let column_selection = self.board.get_ai_move();
         self.board.place_at_column(column_selection, AI_ID);
         self.check_state(AI_ID);

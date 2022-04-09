@@ -1,7 +1,7 @@
 use yew::html::Scope;
 use yew::prelude::*;
-use crate::game;
 
+use crate::game;
 use crate::game::*;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
@@ -16,6 +16,7 @@ pub struct Props {
 
 pub struct PlayScreen {
     pub game: Game,
+    pub game_state: GameState,
     pub board_state: Vec<(i32, String)>,
 }
 
@@ -28,7 +29,6 @@ impl Component for PlayScreen {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-
         let ai = match ctx.props().selected_difficulty.as_str() {
             "Easy" => {
                 game::AI_EASY
@@ -47,20 +47,42 @@ impl Component for PlayScreen {
         let game = Game::new(
             ctx.props().rows.clone().parse::<usize>().unwrap(),
             ctx.props().columns.clone().parse::<usize>().unwrap(),
-            ai
+            ai,
         );
 
         let board_state = game.get_board_state();
 
         Self {
             game,
+            game_state: GameState::Running,
             board_state,
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
         match _msg {
-            Msg::ColumnSelected(i) => {
+            Msg::ColumnSelected(column) => {
+                if self.game.player_turn(column) {
+                    // Update render
+                    self.board_state = self.game.get_board_state();
+
+                    // Check for victory/tie
+                    self.game_state = self.game.check_state(game::PLAYER_ID);
+
+                    if self.game_state != GameState::Running {
+                        return true;
+                    }
+
+                    // Perform AI turn
+                    self.game.ai_turn();
+
+                    // Update render
+                    self.board_state = self.game.get_board_state();
+
+                    // Check for victory/tie
+                    self.game_state = self.game.check_state(game::AI_ID);
+                }
+
                 true
             }
         }
@@ -100,10 +122,14 @@ impl Component for PlayScreen {
                             ctx.props().selected_disc_color.clone()
                         )
                     } {
-                        self.render_col_buttons(
-                            ctx.link(),
-                            ctx.props().selected_board_size.clone(),
-                        )
+                        if self.game_state == GameState::Running {
+                            self.render_col_buttons(
+                                ctx.link(),
+                                ctx.props().selected_board_size.clone(),
+                            )
+                        } else {
+                            html!{}
+                        }
                     }
                 </div>
             </div>
