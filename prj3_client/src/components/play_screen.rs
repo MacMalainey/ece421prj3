@@ -1,3 +1,4 @@
+use std::fmt::format;
 use yew::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
@@ -32,17 +33,25 @@ impl Component for PlayScreen {
         let name = ctx.props().name.clone();
         let selected_color = ctx.props().selected_disc_color.clone();
         let mode = ctx.props().selected_difficulty.clone();
+
+        let mut p1 = "You";
+        let mut p2 = "Computer";
+        if name == "TOOT and OTTO" {
+            p1 = "You - TOOT";
+            p2 = "Computer - OTTO";
+        }
+
         html! {
             <div class="container" style="max-width:650px">
                 <h1 class="title has-text-centered mt-6">{name}</h1>
                 <div class="mt-6">
                     <div class="in-game-player-info">
                         <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + &selected_color.to_string()}/>
-                        <div style={""}>{"You"}</div>
+                        <div style={""}>{p1}</div>
                     </div>
                     <div class="in-game-player-info">
                         <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + self.get_opponent_color(selected_color.to_string())}/>
-                        <div style={""}>{"Computer"}</div>
+                        <div style={""}>{p2}</div>
                     </div>
                     <div style={"float:right"}>{format!("{} mode", mode)}</div>
                 </div>

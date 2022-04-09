@@ -11,7 +11,7 @@ mod mutations;
 mod stores;
 
 use pages::{
-    connect_4_setup::Connect4Setup, home::Home, login::Login, page_not_found::PageNotFound, toot_setup::TootSetup
+    connect_4::Connect4, home::Home, login::Login, page_not_found::PageNotFound, toot::Toot
 };
 
 use stores::auth::AuthCredentials;
@@ -40,8 +40,8 @@ fn switch(routes: &Route) -> Html {
         Route::Home => html! { <Home/> },
         Route::Login => html! { <Login/> },
         Route::Leaderboard => html! { <PageNotFound/> },
-        Route::Connect4 => html! { <Connect4Setup/> },
-        Route::TootOtto => html! { <TootSetup/> },
+        Route::Connect4 => html! { <Connect4/> },
+        Route::TootOtto => html! { <Toot/> },
         Route::NotFound => html! { <PageNotFound/> },
     }
 }

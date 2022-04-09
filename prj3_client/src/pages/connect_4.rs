@@ -5,7 +5,7 @@ use crate::components::{
     play_screen::PlayScreen,
 };
 
-pub struct TootSetup {
+pub struct Connect4 {
     name: String,
     steps: Vec<String>,
     description: String,
@@ -23,29 +23,29 @@ pub enum Msg {
     StartPressed([String; 3]),
 }
 
-impl Component for TootSetup {
+impl Component for Connect4 {
     type Message = Msg;
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {
-            name: "TOOT and OTTO".to_string(),
-            description: "TOOT-OTTO is a fun strategy game for older players who like tic-tac-toe and checkers. One player is TOOT and the other player is OTTO. Both players can place both T's and O's, based on their choice. The first player who spells his or her winning combination - horizontally, vertically or diagonally - wins!".to_string(),
-            steps: vec!["A new game describes which player is TOOT and which is OTTO".to_string(),
-                        "Select the disc type T or O that you want to place".to_string(),
-                        "Click on the desired column on the game board to place your disc".to_string(),
-                        "Try to spell TOOT or OTTO based on your winning combination, either horizontally or vertically or diagonally".to_string()],
+        Self{
+            name: "Connect 4".to_string(),
+            description: "Connect Four is a two-player connection game in which the players take turns dropping colored discs from the top into a seven-column, six-row vertically suspended grid. The objective of the game is to be the first to form a horizontal, vertical, or diagonal line of four of one's own discs.
+            ".to_string(),
+            steps: vec!["A new game describes discs of which color belongs to which player".to_string(),
+            "Click on the desired column on the game board to place your disc".to_string(),
+            "Try to connect 4 of your colored discs either horizontally or vertically or diagonally".to_string()],
             difficulties: vec!["Easy".to_string(), "Medium".to_string(), "Hard".to_string()],
-            board_sizes: vec!["6x4".to_string(), "7x7".to_string()],
+            board_sizes: vec!["5x4".to_string(), "7x6".to_string()],
             disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
             selected_difficulty: "Easy".to_string(),
-            selected_board_size: "6x4".to_string(),
             selected_disc_color: "#FF8E8E".to_string(),
+            selected_board_size: "5x4".to_string(),
             should_start: false,
-            board_state: vec![(0, "".to_string()), (0, "".to_string()),  (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
-                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (1, "O".to_string()), (2, "T".to_string()), (0, "".to_string())]
+            board_state: vec![(0, "".to_string()), (0, "".to_string()),  (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (1, "".to_string()), (2, "".to_string())]
         }
     }
 
