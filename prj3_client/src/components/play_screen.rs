@@ -1,3 +1,4 @@
+use yew::html::Scope;
 use yew::prelude::*;
 use crate::game;
 
@@ -18,7 +19,9 @@ pub struct PlayScreen {
     pub board_state: Vec<(i32, String)>,
 }
 
-pub enum Msg {}
+pub enum Msg {
+    ColumnSelected(usize)
+}
 
 impl Component for PlayScreen {
     type Message = Msg;
@@ -56,7 +59,11 @@ impl Component for PlayScreen {
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        true
+        match _msg {
+            Msg::ColumnSelected(i) => {
+                true
+            }
+        }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -94,6 +101,7 @@ impl Component for PlayScreen {
                         )
                     } {
                         self.render_col_buttons(
+                            ctx.link(),
                             ctx.props().selected_board_size.clone(),
                         )
                     }
@@ -151,7 +159,7 @@ impl PlayScreen {
         }
     }
 
-    fn render_col_buttons(&self, selected_board_size: String) -> Html {
+    fn render_col_buttons(&self, link: &Scope<Self>, selected_board_size: String) -> Html {
         let split: Vec<&str> = selected_board_size.split("x").collect();
         let cols = split[0];
         // let rows = split[1];
@@ -162,7 +170,10 @@ impl PlayScreen {
                     {
                         iterator.iter().enumerate().map(|(i, _)| {
                             html! {
-                                <div class="col-button"/>
+                                <div
+                                    class="col-button"
+                                    onclick = {link.callback(move |_| Msg::ColumnSelected(i))}
+                                />
                             }
                         }).collect::<Html>()
                     }
