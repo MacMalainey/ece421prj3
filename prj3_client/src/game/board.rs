@@ -340,6 +340,10 @@ impl Board {
                             }
                         }
 
+                        if m.len() == 0 {
+                            break;
+                        }
+
                         let rand_choice = m[random::<usize>() % m.len()];
                         let player = if self.player_turn { PLAYER_ID } else { AI_ID };
 

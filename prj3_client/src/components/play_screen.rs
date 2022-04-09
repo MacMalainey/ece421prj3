@@ -65,6 +65,7 @@ impl Component for PlayScreen {
     fn update(&mut self, ctx: &Context<Self>, _msg: Self::Message) -> bool {
         match _msg {
             Msg::ColumnSelected(column) => {
+                // log::info!("Player turn");
                 if self.game.player_turn(column) {
                     // Update render
                     self.board_state = self.game.get_board_state();
