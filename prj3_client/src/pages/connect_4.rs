@@ -60,10 +60,6 @@ impl Component for Connect4 {
         let split: Vec<&str> = self.selected_board_size.split("x").collect();
         let columns = split[0].to_string();
         let rows = split[1].to_string();
-        // let selected_board_size = self.selected_board_size.clone();
-        // let split: Vec<&str> = selected_board_size.split("x").collect();
-        // let columns = split[0];
-        // let rows = split[1];
         html! {{if self.should_start {
             html! {
                 <PlayScreen

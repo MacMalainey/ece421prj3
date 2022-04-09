@@ -18,10 +18,12 @@ pub struct PlayScreen {
     pub game: Game,
     pub game_state: GameState,
     pub board_state: Vec<(i32, String)>,
+    pub ai: AIConfiguration,
 }
 
 pub enum Msg {
-    ColumnSelected(usize)
+    ColumnSelected(usize),
+    RestartGame
 }
 
 impl Component for PlayScreen {
@@ -56,10 +58,11 @@ impl Component for PlayScreen {
             game,
             game_state: GameState::Running,
             board_state,
+            ai
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, _msg: Self::Message) -> bool {
         match _msg {
             Msg::ColumnSelected(column) => {
                 if self.game.player_turn(column) {
@@ -82,6 +85,18 @@ impl Component for PlayScreen {
                     // Check for victory/tie
                     self.game_state = self.game.check_state(game::AI_ID);
                 }
+
+                true
+            }
+            Msg::RestartGame => {
+                self.game = Game::new(
+                    ctx.props().rows.clone().parse::<usize>().unwrap(),
+                    ctx.props().columns.clone().parse::<usize>().unwrap(),
+                    self.ai,
+                );
+
+                self.board_state = self.game.get_board_state();
+                self.game_state = GameState::Running;
 
                 true
             }
@@ -128,7 +143,17 @@ impl Component for PlayScreen {
                                 ctx.props().selected_board_size.clone(),
                             )
                         } else {
-                            html!{}
+                            let result = self.get_result_text(self.game_state).to_string();
+                            html! {
+                                <div class="card results-card">
+                                  <div class="card-content">
+                                    <div class="content">
+                                        <h1 class="title has-text-centered">{result}</h1>
+                                        <button class="button is-primary" onclick={ctx.link().callback(|_| Msg::RestartGame)} style={"width: 100%;"}>{"Play again"}</button>
+                                    </div>
+                                  </div>
+                                </div>
+                            }
                         }
                     }
                 </div>
@@ -138,6 +163,16 @@ impl Component for PlayScreen {
 }
 
 impl PlayScreen {
+    fn get_result_text(&self, state: GameState) -> &'static str {
+        if state == GameState::Tie {
+            "You tied"
+        } else if state == GameState::Win(PLAYER_ID) {
+            "You win!"
+        } else {
+            "You lost :("
+        }
+    }
+
     fn get_opponent_color(&self, selected_disc_color: String) -> &'static str {
         if selected_disc_color == "#FF8E8E" {
             "#FFE68E"
