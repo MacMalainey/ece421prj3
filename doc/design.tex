@@ -1,6 +1,16 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{minted}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  filecolor=magenta,      
+  urlcolor=blue,
+  pdftitle={ECE 421 Project 3 Design},
+  pdfpagemode=FullScreen,
+}
 
 \title{ECE 421 Project 3 Design}
 \author{
@@ -22,7 +32,7 @@
     \tableofcontents
 \end{titlepage}
 
-\section{Backend API}
+\section{Server Backend}
 
 \subsection{REST Endpoints}
 
@@ -229,9 +239,59 @@ Sadly \mintinline{text}|rocket(v0.5.0)| does not support \mintinline{text}|mongo
 with a \mintinline{text}|sqlite3| database. We felt \mintinline{text}|diesel| was a better option than \mintinline{text}|rusqlite| with its CLI app to be able to create and run database migrations,
 embed migrations into the app so that the database could be built on first run as well as the compile time query checking saving a lot of potential headaches during development and for future development and saved on boilerplate code.
 
+\pagebreak
+
 \subsection{Admin CLI}
 
-A local database can be investigated and altered directly using \mintinline{text}|prj3_cli|
-which allows for actions on the database that are not currently available through the backend API.
+A local database can be investigated and altered directly using \mintinline{text}|prj3_cli|.
+To use, run the CLI and when prompted specify a path for the database you wish to alter.
+If no database exists at the given path one will be created.  Then use the next menu to perform various actions on the database.
+
+\section{Web Client}
+
+\section{Local Setup}
+
+\subsection{Notice}
+The tutorial assumes you have the Rust toolchain installed on your system.
+Also, the install SQLite3 step is not necessary since sqlite3 is compiled using the library bundled with the \mintinline{text}|libsqlite3-sys| package,
+however this does increase the download size for the dependency but for environment consistency is recommended.
+Database initialization can be completed by running the CLI or running the server with the features mentioned in the tutorial.
+
+\subsection{Default Config}
+
+The default database path is \mintinline{text}|$PROJ_ROOT$/localdev.db|
+
+The default port that the local web server serves on is \mintinline{text}|8080|
+
+The default port that the backend API server serves on is \mintinline{text}|8000|
+
+IMPORTANT: a proxy is set up for the API calls (see \href{run: ../Trunk.toml}{Trunk.toml}) for the local web server that expects the backend API server to be running on the same machine on the port mentioned above.
+If you wish to change the port or host the backend API server on a different device you will need to update the proxy address in the mentioned config file.
+
+\subsection{Instructions}
+
+See the \href{run:../README.md}{readme} for information on setting up the environment and running the server backend and web client.
+
+\section{Key Design Considerations}
+
+\subsection{Computerized Board}
+
+\subsection{Computerized Opponents}
+
+\subsection{Interface Components}
+
+\subsection{Exception Handling}
+
+In a GUI app exception handling must be taken with care.
+In a CLI app or script it might be acceptable to simply print out an error message and move on, or just panic on those rare slightly incovnient to safely handle errors.
+However, for a GUI app this is much different because we always want to ensuring the app remains responsive and that the user has enough feedback from our app to determine what the next rational step should be.
+Since panicking in a GUI app might cause the app to freeze (especially a web app) this should be avoided and any errors that cannot be fixed (such as failed logout attempts) should be reported to the user, so they are aware that something went wrong and can safely determine what the next step should be. 
+
+\subsection{Development Tools}
+
+Development tools are important to have to be able to debug and verify a system outside of the server and client.  We developed an Admin CLI tool to allow for us to create test data or find data in the database to verify the functionality of the server and web app.
+The CLI does NOT have support for directly testing the server APIs directly, instead other tools such as \href{https://www.postman.com}{Postman} were used to verify the API endpoints against test data.
+
+\subsection{UI Design Patterns}
 
 \end{document}
