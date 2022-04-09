@@ -1,6 +1,9 @@
 use yew::prelude::*;
 
-use crate::components::game_setup::GameSetup;
+use crate::components::{
+    game_setup::GameSetup,
+    play_screen::PlayScreen,
+};
 
 pub struct TootSetup {
     name: String,
@@ -13,6 +16,7 @@ pub struct TootSetup {
     selected_disc_color: String,
     selected_board_size: String,
     should_start: bool,
+    board_state: Vec<(i32, String)>,
 }
 
 pub enum Msg {
@@ -32,12 +36,16 @@ impl Component for TootSetup {
                         "Click on the desired column on the game board to place your disc".to_string(),
                         "Try to spell TOOT or OTTO based on your winning combination, either horizontally or vertically or diagonally".to_string()],
             difficulties: vec!["Easy".to_string(), "Medium".to_string(), "Hard".to_string()],
-            board_sizes: vec!["5x4".to_string(), "7x6".to_string()],
+            board_sizes: vec!["6x4".to_string(), "7x7".to_string()],
             disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
             selected_difficulty: "Easy".to_string(),
-            selected_disc_color: "5x4".to_string(),
-            selected_board_size: "#FF8E8E".to_string(),
-            should_start: false
+            selected_board_size: "6x4".to_string(),
+            selected_disc_color: "#FF8E8E".to_string(),
+            should_start: false,
+            board_state: vec![(0, "".to_string()), (0, "".to_string()),  (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (1, "O".to_string()), (2, "T".to_string()), (0, "".to_string())]
         }
     }
 
@@ -56,7 +64,13 @@ impl Component for TootSetup {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {{if self.should_start {
             html! {
-                <div/>
+                <PlayScreen
+                    name={self.name.clone()}
+                    selected_difficulty = {self.selected_difficulty.clone()}
+                    selected_board_size = {self.selected_board_size.clone()}
+                    selected_disc_color = {self.selected_disc_color.clone()}
+                    board_state = {self.board_state.clone()}
+                />
             }
         } else {
             html! {

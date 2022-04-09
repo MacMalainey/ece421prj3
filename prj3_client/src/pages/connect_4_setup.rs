@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 use crate::components::{
     game_setup::GameSetup,
-    connect_4_play::Connect4Play,
+    play_screen::PlayScreen,
 };
 
 pub struct Connect4Setup {
@@ -16,7 +16,7 @@ pub struct Connect4Setup {
     selected_disc_color: String,
     selected_board_size: String,
     should_start: bool,
-    board_state: Vec<i32>,
+    board_state: Vec<(i32, String)>,
 }
 
 pub enum Msg {
@@ -27,7 +27,7 @@ impl Component for Connect4Setup {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self{
             name: "Connect 4".to_string(),
             description: "Connect Four is a two-player connection game in which the players take turns dropping colored discs from the top into a seven-column, six-row vertically suspended grid. The objective of the game is to be the first to form a horizontal, vertical, or diagonal line of four of one's own discs.
@@ -39,10 +39,13 @@ impl Component for Connect4Setup {
             board_sizes: vec!["5x4".to_string(), "7x6".to_string()],
             disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
             selected_difficulty: "Easy".to_string(),
-            selected_disc_color: "5x4".to_string(),
-            selected_board_size: "#FF8E8E".to_string(),
+            selected_disc_color: "#FF8E8E".to_string(),
+            selected_board_size: "5x4".to_string(),
             should_start: false,
-            board_state: vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2]
+            board_state: vec![(0, "".to_string()), (0, "".to_string()),  (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (0, "".to_string()),
+                              (0, "".to_string()), (0, "".to_string()), (0, "".to_string()), (1, "".to_string()), (2, "".to_string())]
         }
     }
 
@@ -61,7 +64,7 @@ impl Component for Connect4Setup {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {{if self.should_start {
             html! {
-                <Connect4Play
+                <PlayScreen
                     name={self.name.clone()}
                     selected_difficulty = {self.selected_difficulty.clone()}
                     selected_board_size = {self.selected_board_size.clone()}

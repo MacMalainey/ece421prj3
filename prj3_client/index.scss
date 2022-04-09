@@ -67,6 +67,11 @@
     height: 60px;
     width: 60px;
     border-radius: 50%;
+    div {
+      text-align: center;
+      line-height: 60px;
+      font-size: 22px;
+    }
   }
 
 .grid-container {
@@ -79,6 +84,10 @@
   grid-template-columns: auto auto auto auto auto;
 }
 
+.grid_cols_6 {
+  grid-template-columns: auto auto auto auto auto auto;
+}
+
 .grid_cols_7 {
   grid-template-columns: auto auto auto auto auto auto auto;
 }
@@ -87,4 +96,13 @@
   margin:auto;
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.in-game-player-info {
+  display: inline-block;
+  width: 120px;
+  div {
+    display: inline-block;
+    margin-right: 8px;
+  }
 }
