@@ -129,6 +129,7 @@ pub async fn verify() -> Option<UserInfo> {
         .ok()
 }
 
+/// Run API call for logging out
 pub async fn logout() -> Result<(), APIError> {
     let endpoint_url = get_base_url().join("api/v1/user/logout").unwrap();
 
