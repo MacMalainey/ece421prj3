@@ -135,3 +135,29 @@
   width: 50%;
   opacity: 95%;
 }
+
+.leaderboard-card {
+  .rank {
+    width:70px;
+    display: inline-block;
+  }
+
+  .name {
+    width:230px;
+    display: inline-block;
+  }
+
+  .difficulty {
+    width:120px;
+    display: inline-block;
+  }
+
+  .moves {
+    width:80px;
+    display: inline-block;
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+}
