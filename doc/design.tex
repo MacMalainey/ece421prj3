@@ -318,6 +318,8 @@ Furthermore, for development of the games and AI, we created a CLI for testing t
 
 \subsection{UI Design Patterns}
 
+MVC and MVVM are UI application design patterns that help abstract the roles of the View (what the player sees/code that is rendered to screen), the Controller or ViewModel (the code that controls handling input from the view and updating the view when necessary) and the Model (the actual data the view represents, contains the business logic).
+These patterns are relevant because they help to determine where the abstractions should occur when creating the application so the application can be more readily changed/extended without much concern of impacting the entire application (ex: an update to a model's business logic is less likely to impact view code and view code changes are less likely to impact model code).
 
 \section{Known Issues}
 
