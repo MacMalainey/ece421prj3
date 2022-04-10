@@ -54,13 +54,32 @@ pub fn leaderboard() -> Html {
     );
 
     // Handle the query state (doesn't need to be handed here)
-    match records_query.result() {
-        None => {},             // Loading
+    let body = match records_query.result() {
+        None => {html!{ <div class="leaderboard-card mt-2 mb-2">{"Loading leaderboard..."}</div> }},             // Loading
         Some(Ok(query)) => {  // Finished Success
             let records: &Records<MatchRecord> = &query.0; // Left the type in to make it easy to identify what it is
+            let x = &records.records;
+            x.iter().enumerate().map(|(i, record)| {
+                let level;
+                if record.cpu_level == CpuLevel::Easy {
+                    level = "Easy";
+                } else if record.cpu_level == CpuLevel::Medium {
+                    level = "Medium";
+                } else {
+                    level = "Hard";
+                }
+                html! {
+                    <div class="leaderboard-card mt-2 mb-2">
+                        <div class="rank">{format!("#{}", i+1)}</div>
+                        <div class="name">{record.user_id.as_ref().unwrap()}</div>
+                        <div class="difficulty">{level}</div>
+                        <div class="moves">{record.moves}</div>
+                    </div>
+                }
+            }).collect::<Html>()
         },
-        Some(Err(_err)) => {}   // Finished Error
-    }
+        Some(Err(_err)) => {html!{ <div class="leaderboard-card mt-2 mb-2">{"Error loading leaderboard"}</div> }}   // Finished Error
+    };
 
     let mut connect_class = "is-active";
     let mut toot_class = "";
@@ -120,25 +139,26 @@ pub fn leaderboard() -> Html {
                     <div class="moves bold">{"Moves"}</div>
                 </div>
                 {
-                    if state.isOnConnect4 {
-                        html! {
-                            <div class="leaderboard-card mt-2 mb-2">
-                                <div class="rank">{"#1"}</div>
-                                <div class="name">{"Lora"}</div>
-                                <div class="difficulty">{"Hard"}</div>
-                                <div class="moves">{"2"}</div>
-                            </div>
-                        }
-                    } else {
-                        html! {
-                            <div class="leaderboard-card mt-2 mb-2">
-                                <div class="rank">{"#1"}</div>
-                                <div class="name">{"Ben"}</div>
-                                <div class="difficulty">{"Easy"}</div>
-                                <div class="moves">{"2"}</div>
-                            </div>
-                        }
-                    }
+                    body
+                    // if state.isOnConnect4 {
+                    //     html! {
+                    //         <div class="leaderboard-card mt-2 mb-2">
+                    //             <div class="rank">{"#1"}</div>
+                    //             <div class="name">{"Lora"}</div>
+                    //             <div class="difficulty">{"Hard"}</div>
+                    //             <div class="moves">{"2"}</div>
+                    //         </div>
+                    //     }
+                    // } else {
+                    //     html! {
+                    //         <div class="leaderboard-card mt-2 mb-2">
+                    //             <div class="rank">{"#1"}</div>
+                    //             <div class="name">{"Ben"}</div>
+                    //             <div class="difficulty">{"Easy"}</div>
+                    //             <div class="moves">{"2"}</div>
+                    //         </div>
+                    //     }
+                    // }
                 }
             </div>
         }
