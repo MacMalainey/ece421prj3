@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use bounce::query::{use_query_value};
+use bounce::query::{use_mutation_value};
 
 use shared_types::types::{MatchQuerySortBy, MatchQueryFilter, GameType, CpuLevel, MatchResult, Records, MatchRecord};
 
@@ -26,6 +26,8 @@ pub fn leaderboard() -> Html {
         error: None
     });
 
+    let should_refresh_query = use_mut_ref(|| true);
+
     // Get the option to filter the game
     let game_filter = if state.isOnConnect4 {
         GameType::Connect4
@@ -35,31 +37,43 @@ pub fn leaderboard() -> Html {
 
     // todo: determine which CPU types to filter
 
-    // Set up filter options
-    let filters = MatchQueryFilter {
-        result: vec![MatchResult::Win],
-        game: vec![game_filter],
-        level: vec![]
-    };
-
-    // Run query
-    let records_query = use_query_value::<MatchRecordQuery>(
-        MatchRecordQueryOptions {
-            limit: None,                               // Option<i64>
-            offset: None,                              // Option<i64>
-            filters: Some(filters),                    // &Option<MatchQueryFilter>
-            sort_by: Some(MatchQuerySortBy::Duration), // Option<MatchQuerySortBy>
-            asc: Some(true)                            // Option<bool>
-        }.into()
-    );
+    // Get query handle
+    let records_query = use_mutation_value::<MatchRecordQuery>();
 
     // Handle the query state (doesn't need to be handed here)
+    let srq = *should_refresh_query.borrow();
     match records_query.result() {
-        None => {},             // Loading
-        Some(Ok(query)) => {  // Finished Success
-            let records: &Records<MatchRecord> = &query.0; // Left the type in to make it easy to identify what it is
-        },
-        Some(Err(_err)) => {}   // Finished Error
+        Some(Ok(query)) if !srq => {},
+        Some(Err(_err)) if !srq => {},
+        _ => {}
+    }
+
+    // Update query if necessary
+    {
+        let mut srq_mut = should_refresh_query.borrow_mut();
+        if *srq_mut {
+            *srq_mut = false;
+
+            // Set up filter options
+            let filters = MatchQueryFilter {
+                result: vec![MatchResult::Loss],
+                game: vec![game_filter],
+                level: vec![]
+            };
+
+            let records_query = records_query.clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                let _res = records_query.run(
+                    MatchRecordQueryOptions {
+                        limit: None,                               // Option<i64>
+                        offset: None,                              // Option<i64>
+                        filters: Some(filters),                    // &Option<MatchQueryFilter>
+                        sort_by: Some(MatchQuerySortBy::Duration), // Option<MatchQuerySortBy>
+                        asc: Some(true)                            // Option<bool>
+                    }
+                ).await;
+            })
+        }
     }
 
     let mut connect_class = "is-active";
@@ -72,18 +86,26 @@ pub fn leaderboard() -> Html {
     // Callback for switching to register
     let switch_to_toot = {
         let state = state.clone();
-        Callback::from(move |_| state.set(LeaderboardState {
-            isOnConnect4: false,
-            error: None
-        }))
+        let should_refresh_query = should_refresh_query.clone();
+        Callback::from(move |_| {
+            *should_refresh_query.borrow_mut() = true;
+            state.set(LeaderboardState {
+                isOnConnect4: false,
+                error: None
+            })
+        })
     };
 
     let switch_to_connect = {
         let state = state.clone();
-        Callback::from(move |_| state.set(LeaderboardState {
-            isOnConnect4: true,
-            error: None
-        }))
+        let should_refresh_query = should_refresh_query.clone();
+        Callback::from(move |_| {
+            *should_refresh_query.borrow_mut() = true;
+            state.set(LeaderboardState {
+                isOnConnect4: true,
+                error: None
+            })
+        })
     };
 
     html! {

@@ -24,12 +24,13 @@ pub struct MatchRecordQueryOptions {
 #[derive(Debug, PartialEq)]
 pub struct MatchRecordQuery(pub Records<MatchRecord>);
 
+// Use mutation here because Bounce's Query API is broken...
 #[async_trait(?Send)]
-impl Query for MatchRecordQuery {
+impl Mutation for MatchRecordQuery {
     type Input = MatchRecordQueryOptions;
     type Error = ServiceError;
 
-    async fn query(_states: &BounceStates, input: Rc<MatchRecordQueryOptions>) -> QueryResult<Self> {
+    async fn run(_states: &BounceStates, input: Rc<MatchRecordQueryOptions>) -> MutationResult<Self> {
         let records = get_records(
             input.limit,
             input.offset,
