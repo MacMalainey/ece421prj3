@@ -1,5 +1,11 @@
 use yew::prelude::*;
 
+use bounce::query::{use_query_value};
+
+use shared_types::types::{MatchQuerySortBy, MatchQueryFilter, GameType, CpuLevel, MatchResult, Records, MatchRecord};
+
+use crate::mutations::match_records::{MatchRecordQuery, MatchRecordQueryOptions};
+
 #[derive(PartialEq)]
 struct LeaderboardState {
     isOnConnect4: bool,
@@ -19,6 +25,42 @@ pub fn leaderboard() -> Html {
         isOnConnect4: true,
         error: None
     });
+
+    // Get the option to filter the game
+    let game_filter = if state.isOnConnect4 {
+        GameType::Connect4
+    } else {
+        GameType::OttoToot
+    };
+
+    // todo: determine which CPU types to filter
+
+    // Set up filter options
+    let filters = MatchQueryFilter {
+        result: vec![MatchResult::Win],
+        game: vec![game_filter],
+        level: vec![]
+    };
+
+    // Run query
+    let records_query = use_query_value::<MatchRecordQuery>(
+        MatchRecordQueryOptions {
+            limit: None,                               // Option<i64>
+            offset: None,                              // Option<i64>
+            filters: Some(filters),                    // &Option<MatchQueryFilter>
+            sort_by: Some(MatchQuerySortBy::Duration), // Option<MatchQuerySortBy>
+            asc: Some(true)                            // Option<bool>
+        }.into()
+    );
+
+    // Handle the query state (doesn't need to be handed here)
+    match records_query.result() {
+        None => {},             // Loading
+        Some(Ok(query)) => {  // Finished Success
+            let records: &Records<MatchRecord> = &query.0; // Left the type in to make it easy to identify what it is
+        },
+        Some(Err(_err)) => {}   // Finished Error
+    }
 
     let mut connect_class = "is-active";
     let mut toot_class = "";

@@ -82,7 +82,7 @@ impl Mutation for UserMatchRecordMutation {
 }
 
 /// POST to /user/records/add with data
-pub async fn post_user_record(
+async fn post_user_record(
     record: &ClientMatchData
 ) -> Result<(), APIError> {
     let endpoint_url = get_base_url().join("api/v1/user/records/add").unwrap();
@@ -99,7 +99,7 @@ pub async fn post_user_record(
 }
 
 /// GET from /user/records using options
-pub async fn get_user_records(
+async fn get_user_records(
     limit: Option<i64>,
     offset: Option<i64>,
     filters: &Option<MatchQueryFilter>,
@@ -130,7 +130,7 @@ pub async fn get_user_records(
 }
 
 /// GET from /games/records using options
-pub async fn get_records(
+async fn get_records(
     limit: Option<i64>,
     offset: Option<i64>,
     filters: &Option<MatchQueryFilter>,
