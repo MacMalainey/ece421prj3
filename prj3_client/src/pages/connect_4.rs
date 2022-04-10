@@ -35,7 +35,7 @@ impl Component for Connect4 {
                         "Click on the desired column on the game board to place your disc".to_string(),
                         "Try to connect 4 of your colored discs either horizontally or vertically or diagonally".to_string()],
             difficulties: vec!["Easy".to_string(), "Medium".to_string(), "Hard".to_string()],
-            board_sizes: vec!["5x4".to_string(), "7x6".to_string()],
+            board_sizes: vec!["7x6".to_string(), "5x4".to_string()],
             disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
             selected_difficulty: "Easy".to_string(),
             selected_disc_color: "#FF8E8E".to_string(),

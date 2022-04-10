@@ -218,14 +218,6 @@
   \end{description}
 \end{description}
 
-\subsubsection{Notes for Future Development}
-
-\begin{itemize}
-  \item[] Admin User APIs should be implemented so that a web-created Admin Console may be implemented.
-  This was not implemented right now due to time constraints.
-  \item[] Check APIs for security vulnerabilities (due to time constaints only minimal security could be implemented)
-\end{itemize}
-
 \subsection{Backend Stack}
 
 The backend is implemented using \mintinline{text}|rocket(v0.5.0)| for the backend server framework. 
@@ -319,5 +311,36 @@ Development tools are important to have to be able to debug and verify a system 
 The CLI does NOT have support for directly testing the server APIs directly, instead other tools such as \href{https://www.postman.com}{Postman} were used to verify the API endpoints against test data.
 
 \subsection{UI Design Patterns}
+
+\section{Known Issues}
+
+\subsection{User Authentication}
+
+\begin{description}
+  \item[UI: MISSING] No input validation is performed on the login/register forms.  Empty forms can be submitted.  Has not be found to cause any crashes, just possible security vulnerability.
+  \item[AUTH: MISSING] Username matching is case sensitive.
+  \item[AUTH: MISSING] No validation for usernames or passwords implemented on server.
+  \item[AUTH: MISSING] No validation made to verify when logging in the client doesn't already represent a valid user on server.  However this has no impact right now, it is a potential future security vulnerability.  
+\end{description}
+
+\subsection{General UI}
+
+\begin{description}
+  \item[UI: BUG] General UI issues such as unaligned text, dropdown menus not closing, etc
+  \item[UI: MISSING] No animations for game
+\end{description}
+
+\subsection{Leaderboards}
+
+\begin{description}
+  \item[UI: MISSING] No way to filter CPU level or board size (filtering CPU level is implemented server-side though)
+\end{description}
+
+\subsection{Match Record Database}
+
+\begin{description}
+  \item[DATABASE: MISSING] Way to classify board sizes for a match
+  \item[DATABASE: MISSING] Handling when a user account is deleted
+\end{description}
 
 \end{document}
