@@ -5,7 +5,7 @@ CREATE TABLE match_records (
     finished_at DATETIME NOT NULL,
     game_id INTEGER NOT NULL,
     cpu_level INTEGER NOT NULL,
-    duration INTEGER NOT NULL,
+    moves INTEGER NOT NULL,
     result INTEGER NOT NULL,
     CHECK (
         (game_id == 1 OR game_id == 2) AND

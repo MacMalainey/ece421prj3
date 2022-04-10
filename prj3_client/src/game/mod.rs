@@ -77,6 +77,10 @@ impl Game {
         self.check_state(AI_ID);
     }
 
+    pub fn get_num_moves(&self) -> u32 {
+        self.board.get_moves()
+    }
+
     /// Print the board
     pub fn print_board(&self) {
         println!("Current board:");

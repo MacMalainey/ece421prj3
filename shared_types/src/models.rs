@@ -66,7 +66,7 @@ pub struct MatchRecordModel {
     /// Level of opponent
     cpu_level: CpuLevel,
     /// Duration (in seconds) of match
-    duration: i32,
+    moves: i32,
     /// Result of match
     result: MatchResult
 }
@@ -80,7 +80,7 @@ impl MatchRecordModel {
             finished_at: DateTime::from_utc(self.finished_at, Utc),
             game_id: self.game_id,
             cpu_level: self.cpu_level,
-            duration: self.duration,
+            moves: self.moves,
             result: self.result
         }
     }
@@ -101,7 +101,7 @@ impl From<(UserAuthToken, ClientMatchData)> for MatchRecordModel {
             finished_at: Utc::now().naive_utc(),
             game_id: record.game_id,
             cpu_level: record.cpu_level,
-            duration: record.duration,
+            moves: record.moves,
             result: record.result
         }
     }
@@ -117,7 +117,7 @@ impl From<(UserAuthToken, MatchRecord)> for MatchRecordModel {
             finished_at: record.finished_at.naive_utc(),
             game_id: record.game_id,
             cpu_level: record.cpu_level,
-            duration: record.duration,
+            moves: record.moves,
             result: record.result
         }
     }

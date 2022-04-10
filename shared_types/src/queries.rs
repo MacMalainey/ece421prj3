@@ -238,9 +238,9 @@ pub mod match_records {
                 },
             MatchQuerySortBy::Duration =>
                 if asc {
-                    query.order((duration.asc(), finished_at.desc()))
+                    query.order((moves.asc(), finished_at.desc()))
                 } else {
-                    query.order((duration.desc(), finished_at.desc()))
+                    query.order((moves.desc(), finished_at.desc()))
                 }
         };
     

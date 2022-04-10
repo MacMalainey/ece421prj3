@@ -5,7 +5,7 @@ table! {
         finished_at -> Timestamp,
         game_id -> Integer,
         cpu_level -> Integer,
-        duration -> Integer,
+        moves -> Integer,
         result -> Integer,
     }
 }

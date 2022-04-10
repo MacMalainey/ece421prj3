@@ -75,12 +75,14 @@ impl BoardUpdateCallbackFactory {
                         panic!("Unknown Game State")
                     };
 
+                    let moves = game_mut.get_num_moves() as i32;
+
                     let record_mutation = record_mutation.clone();
                     wasm_bindgen_futures::spawn_local(async move {
                         let _res = record_mutation.run(ClientMatchData {
                             game_id,
                             cpu_level,
-                            duration: 0,
+                            moves: moves / 2 + moves % 2,
                             result
                         }).await;
                     });

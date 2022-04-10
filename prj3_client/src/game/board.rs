@@ -115,6 +115,10 @@ impl Board {
         }
     }
 
+    pub fn get_moves(&self) -> u32 {
+        self.moves
+    }
+
     /// Check if a given column is valid to place a piece into.
     pub fn check_column_selection(&self, column: isize) -> ColumnSelectionResult {
         if column < 0 || column as usize >= self.columns {
