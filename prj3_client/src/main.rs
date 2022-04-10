@@ -38,7 +38,7 @@ enum Route {
     Leaderboard,
     #[at("/games/connect4")]
     Connect4,
-    #[at("/games/toototto")]
+        #[at("/games/toototto")]
     TootOtto,
     #[not_found]
     #[at("/404")]

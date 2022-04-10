@@ -249,6 +249,32 @@ If no database exists at the given path one will be created.  Then use the next 
 
 \section{Web Client}
 
+\subsection{Pages}
+In \mintinline{text}{main.rs}, we defined routes to the following pages:
+\begin{itemize}
+  \item \mintinline{text}{<Homepage/>}: The component for the homepage that routes to \mintinline{text}{/}
+  \item \mintinline{text}{<Login/>}: The component for the login page that routes to \mintinline{text}{/login}. Users are able to create an account or log in to their account.
+  \item \mintinline{text}{<Leaderboard/>}: The component for the leaderboard page that routes to \mintinline{text}{/leaderboard}. Users are able to view the top ten records for each of the games.
+  \item \mintinline{text}{<Connect4/>}: The component for connect 4 that routes to \mintinline{text}{/games/connect4}. It also contains all the initial This page uses the components \mintinline{text}{<PlayScreen/>} and \mintinline{text}{<GameSetup/>}.
+  \item \mintinline{text}{<Toot/>}: The component for TOOT and OTTO that routes to \mintinline{text}{/games/toototto}. This page also uses the components \mintinline{text}{<PlayScreen/>} and \mintinline{text}{<GameSetup/>}
+\end{itemize}
+
+\subsection{Components}
+\begin{itemize}
+  \item \mintinline{text}{<GameSetup/>}: The component for the game setup screen for both  \mintinline{text}{<Connect4/>} and \mintinline{text}{<Toot/>}. It uses the component \mintinline{text}{<RadioGroup/>}. This component displays the details of the game and explains how to play. It also gives you that ability to select a difficulty, board size, and disc color. 
+  \item \mintinline{text}{<RadioGroup/>}: A components for radio groups such as the radio groups used in \mintinline{text}{<GameSetup/>} where we have the radio groups difficulty, board size, and disc color. 
+  \item \mintinline{text}{<PlayScreen/>}: A component for the game. This generates the board and and handles input for the game.
+\end{itemize}
+
+\subsection{Design choices for interface components}
+There are many choices that exist for interface components:
+\begin{itemize}
+  \item Color: an important design choice especially when designing for color vision deficiency. By choosing colors carefully and with contrast, we can accommodate for users with color vision deficiency. For example, a common color combination that is difficult for people who experience color blindness is red and green, so designers should avoid using them side by side.
+  \item Font: having a readable font is essential, but tactfully using font sizes can be equally important. For example, having headers that are larger and more bold helps the reader recognize the text as being more important to read. Thinner or more small font can be used for descriptions or less important text.
+  \item Dimension of windows: users should be able to use our website on monitors of all different sizes and devices of all kinds. For the design to still look appealing across devices, each component should be designed with the variation of dimensions in mind.
+  \item Input types: there are a variety of different ways to take in user input and some are more intuitive in certain situations than others. We chose to make choosing the difficulty, board size, and disc color use radio buttons. Radio groups are a good design choice for this situation because only one of the radio buttons should be selected at a time. Similarly, getting text input for the log in/sign up information is a method that is intuitive and familiar to most users. Another input type we used was for the game. When selecting a column to place your piece, the entire column is highlighted when you hover on any cell in that column. This helps indicate to the user that you only have choice over the column and not the specific cell.
+\end{itemize} 
+
 \section{Local Setup}
 
 \subsection{Notice}
