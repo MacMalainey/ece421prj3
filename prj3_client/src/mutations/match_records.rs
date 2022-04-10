@@ -89,7 +89,7 @@ pub async fn post_user_record(
 
     let client = reqwest::Client::new();
 
-    let _response = client.get(endpoint_url)
+    let _response = client.post(endpoint_url)
         .json(&record)
         .send()
         .await?

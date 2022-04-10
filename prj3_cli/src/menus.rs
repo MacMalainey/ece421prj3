@@ -264,18 +264,7 @@ impl ToMenu for MatchRecordMenu {
             terminal_menu::list(
                 "CPU Level", vec!["Easy", "Medium", "Hard"]
             ),
-            terminal_menu::submenu("Duration", vec![
-                terminal_menu::numeric(
-                    "Hours", 0.0, Some(1.0), Some(0.0), None
-                ),
-                terminal_menu::numeric(
-                    "Minutes", 0.0, Some(1.0), Some(0.0), Some(59.0)
-                ),
-                terminal_menu::numeric(
-                    "Seconds", 0.0, Some(1.0), Some(0.0), Some(59.0)
-                ),
-                terminal_menu::back_button("Back")
-            ]),
+            terminal_menu::numeric("Moves", 4.0, Some(1.0), Some(4.0), Some(49.0)),
             terminal_menu::list(
                 "Result", vec!["Win", "Loss", "Tie"]
             ),
@@ -335,20 +324,14 @@ impl FromMenu for MatchRecordMenu {
                     val => panic!("Invalid Result value: {}", val)
                 };
 
-                let duration = {
-                    let duration_menu = menu.get_submenu("Duration");
-
-                    duration_menu.numeric_value("Hours") as i64 * 60 * 60
-                        + duration_menu.numeric_value("Minutes") as i64 * 60
-                        + duration_menu.numeric_value("Seconds") as i64
-                } as i32;
+                let moves = menu.numeric_value("Moves") as i32;
 
                 Ok(Some(MatchRecord {
                     user_id: None, // Will get filled in later
                     finished_at,
                     game_id,
                     cpu_level,
-                    duration,
+                    moves,
                     result
                 }))
             },
@@ -414,13 +397,12 @@ impl ToMenu for ListRecordsMenu {
         menu.push(
             terminal_menu::label(
                 format!(
-                    "{:5} | {:15} | {:8} | {:8} | {:8} | {:8} | {:8} | {:8}",
+                    "{:5} | {:8} | {:8} | {:8} | {:<5} | {:8} | {:8}",
                     "ID",
-                    "Username",
                     "Date",
                     "Time",
                     "Game",
-                    "Length",
+                    "Moves",
                     "Opponent",
                     "Result"
                 )
@@ -433,21 +415,15 @@ impl ToMenu for ListRecordsMenu {
 
                 terminal_menu::label(
                     format!(
-                        "{:<5} | {:15} | {:8} | {:8} | {:8} | {:8} | {:8} | {:8}",
+                        "{:<5} | {:8} | {:8} | {:8} | {:<5} | {:8} | {:8}",
                         id,
-                        record.user_id.as_ref().unwrap_or(&"Guest".into()),
                         record.finished_at.with_timezone(&chrono::Local).format("%d/%m/%y"),
                         record.finished_at.with_timezone(&chrono::Local).format("%H:%M:%S"),
                         match record.game_id {
                             GameType::OttoToot => "OttoToot",
                             GameType::Connect4 => "Connect4"
                         },
-                        format!(
-                            "{:2}:{:2}:{:2}",
-                            record.duration / 60 / 60,
-                            record.duration / 60 % 60,
-                            record.duration % 60
-                        ),
+                        record.moves,
                         match record.cpu_level {
                             CpuLevel::Easy => "Easy",
                             CpuLevel::Medium => "Medium",

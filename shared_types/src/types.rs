@@ -219,7 +219,7 @@ impl<'r> FromRequest<'r> for UserAuthToken {
 pub struct ClientMatchData {
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
-    pub duration: i32,
+    pub moves: i32,
     pub result: MatchResult
 }
 
@@ -231,7 +231,7 @@ pub struct MatchRecord {
     pub finished_at: DateTime<Utc>,
     pub game_id: GameType,
     pub cpu_level: CpuLevel,
-    pub duration: i32,
+    pub moves: i32,
     pub result: MatchResult
 }
 
