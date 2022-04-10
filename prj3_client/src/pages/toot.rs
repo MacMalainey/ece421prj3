@@ -36,7 +36,7 @@ impl Component for Toot {
                         "Try to spell TOOT or OTTO based on your winning combination, either horizontally or vertically or diagonally".to_string()],
             difficulties: vec!["Easy".to_string(), "Medium".to_string(), "Hard".to_string()],
             board_sizes: vec!["6x4".to_string(), "7x7".to_string()],
-            disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string(), "black".to_string()],
+            disc_colors: vec!["#FF8E8E".to_string(), "#FFE68E".to_string()],
             selected_difficulty: "Easy".to_string(),
             selected_board_size: "6x4".to_string(),
             selected_disc_color: "#FF8E8E".to_string(),

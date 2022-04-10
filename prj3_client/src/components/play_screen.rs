@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use yew::prelude::*;
@@ -53,7 +54,14 @@ impl BoardUpdateCallbackFactory {
         let is_guest = self.is_guest;
         Callback::from(move |_| {
             let mut game_mut = game.borrow_mut();
-            if game_mut.player_turn(i, Some(Letter::O)) {
+
+            let letter = if state.is_t {
+                Letter::T
+            } else {
+                Letter::O
+            };
+
+            if game_mut.player_turn(i, Some(letter)) {
                 // Check for victory/tie
                 let mut game_state = game_mut.check_state();
 
@@ -93,7 +101,7 @@ impl BoardUpdateCallbackFactory {
 
                 // It appears that state.set() runs synchronously which means that the mutable reference is still active so we drop it here
                 std::mem::drop(game_mut);
-                state.set(PlayScreenState { board_state, game_state, is_t: true }.into())
+                state.set(PlayScreenState { board_state, game_state, is_t: state.is_t }.into())
             }
         })
     }
@@ -174,6 +182,9 @@ pub fn play_screen(props: &Props) -> Html {
         })
     };
 
+    let game_type = get_game_type(name.as_str());
+    let is_toot_and_otto = game_type == GameType::OttoToot;
+
     html! {
         <div class="container" style="max-width:650px">
             <h1 class="title has-text-centered mt-6">{name}</h1>
@@ -183,7 +194,7 @@ pub fn play_screen(props: &Props) -> Html {
                     <div style={""}>{p1}</div>
                 </div>
                 <div class="in-game-player-info">
-                    <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + get_opponent_color(selected_color.to_string())}/>
+                    <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + get_opponent_color(selected_color.to_string(), is_toot_and_otto)}/>
                     <div style={""}>{p2}</div>
                 </div>
                 {
@@ -219,7 +230,8 @@ pub fn play_screen(props: &Props) -> Html {
                     render_grid(
                         props.selected_board_size.clone(),
                         state.board_state.clone(),
-                        props.selected_disc_color.clone()
+                        props.selected_disc_color.clone(),
+                        props.name.clone(),
                     )
                 }
                 {
@@ -305,15 +317,26 @@ fn get_result_text(state: GameState) -> &'static str {
     }
 }
 
-fn get_opponent_color(selected_disc_color: String) -> &'static str {
-    if selected_disc_color == "#FF8E8E" {
+fn get_opponent_color(selected_disc_color: String, is_same: bool) -> &'static str {
+    if is_same {
+        if selected_disc_color == "#FF8E8E" {
+            "#FF8E8E"
+        } else if selected_disc_color == "#FFE68E" {
+            "#FFE68E"
+        } else {
+            "#FF8E8E"
+        }
+    } else if selected_disc_color == "#FF8E8E" {
         "#FFE68E"
     } else {
         "#FF8E8E"
     }
 }
 
-fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, selected_disc_color: String) -> Html {
+fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, selected_disc_color: String, name: String) -> Html {
+    let game_type = get_game_type(name.as_str());
+    let is_toot_and_otto = game_type == GameType::OttoToot;
+
     let split: Vec<&str> = selected_board_size.split("x").collect();
     let cols = split[0];
     // let rows = split[1];
@@ -334,7 +357,7 @@ fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, sel
                         else if piece == 2 {
                             html! {
                                 <div class="grid-item">
-                                    <div class="circle" style={"background-color:".to_string() + get_opponent_color(selected_disc_color.to_string())}>
+                                    <div class="circle" style={"background-color:".to_string() + get_opponent_color(selected_disc_color.to_string(), is_toot_and_otto)}>
                                         <div>{letter}</div>
                                     </div>
                                 </div>
