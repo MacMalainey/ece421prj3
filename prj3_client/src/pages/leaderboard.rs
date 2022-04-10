@@ -47,6 +47,7 @@ pub fn leaderboard() -> Html {
             let records: &Records<MatchRecord> = &query.0; // Left the type in to make it easy to identify what it is
             let x = &records.records;
             x.iter().enumerate().map(|(i, record)| {
+                log::info!("{:#?}", record);
                 let level;
                 if record.cpu_level == CpuLevel::Easy {
                     level = "Easy";
@@ -77,7 +78,7 @@ pub fn leaderboard() -> Html {
 
             // Set up filter options
             let filters = MatchQueryFilter {
-                result: vec![MatchResult::Loss],
+                result: vec![MatchResult::Win],
                 game: vec![game_filter],
                 level: vec![]
             };
@@ -162,28 +163,7 @@ pub fn leaderboard() -> Html {
                     <div class="difficulty bold">{"Difficulty"}</div>
                     <div class="moves bold">{"Moves"}</div>
                 </div>
-                {
-                    body
-                    // if state.isOnConnect4 {
-                    //     html! {
-                    //         <div class="leaderboard-card mt-2 mb-2">
-                    //             <div class="rank">{"#1"}</div>
-                    //             <div class="name">{"Lora"}</div>
-                    //             <div class="difficulty">{"Hard"}</div>
-                    //             <div class="moves">{"2"}</div>
-                    //         </div>
-                    //     }
-                    // } else {
-                    //     html! {
-                    //         <div class="leaderboard-card mt-2 mb-2">
-                    //             <div class="rank">{"#1"}</div>
-                    //             <div class="name">{"Ben"}</div>
-                    //             <div class="difficulty">{"Easy"}</div>
-                    //             <div class="moves">{"2"}</div>
-                    //         </div>
-                    //     }
-                    // }
-                }
+                { body }
             </div>
         }
 }

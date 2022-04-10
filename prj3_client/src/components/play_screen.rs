@@ -26,6 +26,7 @@ pub struct Props {
 struct PlayScreenState {
     pub game_state: GameState,
     pub board_state: Vec<(i32, String)>,
+    pub is_t: bool,
 }
 
 struct BoardUpdateCallbackFactory {
@@ -92,7 +93,7 @@ impl BoardUpdateCallbackFactory {
 
                 // It appears that state.set() runs synchronously which means that the mutable reference is still active so we drop it here
                 std::mem::drop(game_mut);
-                state.set(PlayScreenState { board_state, game_state }.into())
+                state.set(PlayScreenState { board_state, game_state, is_t: true }.into())
             }
         })
     }
@@ -121,6 +122,7 @@ pub fn play_screen(props: &Props) -> Html {
             PlayScreenState {
                 game_state: GameState::Running,
                 board_state: game.borrow().get_board_state(),
+                is_t: true
             }
         })
     };
@@ -146,6 +148,32 @@ pub fn play_screen(props: &Props) -> Html {
         is_guest
     };
 
+    let on_t_selected = {
+        let state = state.clone();
+        let props = props.clone();
+        let game = game.clone();
+        Callback::from(move |_| {
+            state.set(PlayScreenState {
+                board_state: game.borrow().get_board_state(),
+                game_state: GameState::Running,
+                is_t: true
+            }.into());
+        })
+    };
+
+    let on_o_selected = {
+        let state = state.clone();
+        let props = props.clone();
+        let game = game.clone();
+        Callback::from(move |_| {
+            state.set(PlayScreenState {
+                board_state: game.borrow().get_board_state(),
+                game_state: GameState::Running,
+                is_t: false
+            }.into());
+        })
+    };
+
     html! {
         <div class="container" style="max-width:650px">
             <h1 class="title has-text-centered mt-6">{name}</h1>
@@ -158,7 +186,33 @@ pub fn play_screen(props: &Props) -> Html {
                     <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + get_opponent_color(selected_color.to_string())}/>
                     <div style={""}>{p2}</div>
                 </div>
-                <div style={"float:right"}>{format!("{} mode", mode)}</div>
+                {
+                    if props.name.clone() != "Connect 4".to_string() {
+                        html! {
+                            <div class="in-game-player-info ml-5" style={"float:right"}>
+                                <div>{"Select letter: "}</div>
+                                    <span class="mx-2 is-size-6">
+                                        <input
+                                            class="color-1 mr-2"
+                                            type="radio"
+                                            onclick = {on_t_selected}
+                                            checked = {state.clone().is_t}
+                                            />
+                                        {"T"}
+                                    </span>
+                                    <span class="mx-2 is-size-6">
+                                        <input
+                                            class="color-1 mr-2"
+                                            type="radio"
+                                            onclick = {on_o_selected}
+                                            checked = {!state.clone().is_t}
+                                            />
+                                        {"O"}
+                                    </span>
+                            </div>
+                        }
+                    } else {html!{}}
+                }
             </div>
             <div class="card mt-2">
                 {
@@ -189,6 +243,7 @@ pub fn play_screen(props: &Props) -> Html {
                                 state.set(PlayScreenState {
                                     board_state: game.borrow().get_board_state(),
                                     game_state: GameState::Running,
+                                    is_t: true
                                 }.into());
                             })
                         };
@@ -206,6 +261,7 @@ pub fn play_screen(props: &Props) -> Html {
                         }
                     }
                 }
+                <div style={"float:right"}>{format!("{} mode", mode)}</div>
             </div>
         </div>
     }
