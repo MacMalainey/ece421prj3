@@ -14,23 +14,15 @@ impl Component for Home {
             <div class="tile is-ancestor is-vertical">
                 <div class="tile is-child hero">
                     <div class="hero-body container pb-0">
-                        <h1 class="title is-1">{ "Bored?" }</h1>
-                        <h2 class="subtitle">{ "we got games!" }</h2>
+                        <h1 class="title has-text-centered is-3">{ "Bored?" }</h1>
+                        <h2 class="subtitle">{ "We got games!" }</h2>
                     </div>
                 </div>
 
                 <div class="tile is-child">
                     <figure class="image is-3by1">
-                        <img alt="A random image for the input term 'yew'." src="assets/home_banner.jpg" />
+                        <img alt="banner for homepage." src="assets/home_banner.jpg" />
                     </figure>
-                    <div class="content is-small">
-                        <p>
-                            {r#"Photo by "#}
-                            <a href="https://unsplash.com/photos/KFIjzXYg1RM">{r#"Jeremy Bishop"#}</a>
-                            {r#" on "#}
-                            <a href="https://unsplash.com/">{r#"Unsplash"#}</a>
-                        </p>
-                    </div>
                 </div>
 
                 <div class="tile is-parent container">
