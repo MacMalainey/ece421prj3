@@ -52,16 +52,16 @@ impl BoardUpdateCallbackFactory {
         let is_guest = self.is_guest;
         Callback::from(move |_| {
             let mut game_mut = game.borrow_mut();
-            if game_mut.player_turn(i) {
+            if game_mut.player_turn(i, Some(Letter::O)) {
                 // Check for victory/tie
-                let mut game_state = game_mut.check_state(game::PLAYER_ID);
+                let mut game_state = game_mut.check_state();
 
                 if game_state == GameState::Running {
                     // Perform AI turn
                     game_mut.ai_turn();
 
                     // Check for loss/tie
-                    game_state = game_mut.check_state(game::AI_ID);
+                    game_state = game_mut.check_state();
                 }
 
                 if game_state != GameState::Running && !is_guest {
@@ -110,6 +110,7 @@ pub fn play_screen(props: &Props) -> Html {
         Game::new(
             props.rows.clone().parse::<usize>().unwrap(),
             props.columns.clone().parse::<usize>().unwrap(),
+            get_game_type(props.name.as_str()),
             ai_config
         )
     });
@@ -182,6 +183,7 @@ pub fn play_screen(props: &Props) -> Html {
                                 *(game.borrow_mut()) = Game::new(
                                     props.rows.clone().parse::<usize>().unwrap(),
                                     props.columns.clone().parse::<usize>().unwrap(),
+                                    get_game_type(props.name.as_str()),
                                     ai_config
                                 );
                                 state.set(PlayScreenState {
@@ -206,6 +208,17 @@ pub fn play_screen(props: &Props) -> Html {
                 }
             </div>
         </div>
+    }
+}
+
+fn get_game_type(diff: &str) -> GameType {
+    match diff {
+        "TOOT and OTTO" => {
+            GameType::OttoToot
+        },
+        _ => {
+            GameType::Connect4
+        }
     }
 }
 

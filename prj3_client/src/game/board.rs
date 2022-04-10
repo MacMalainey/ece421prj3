@@ -2,10 +2,16 @@ use std::usize;
 
 use rand::prelude::*;
 
-use crate::game::{AI_ID, PLAYER_ID};
-use super::GameState;
+use crate::game::{AI_ID, GameType, PLAYER_ID};
 
+use super::GameState;
 use super::slot::*;
+
+#[derive(Clone, Copy, Debug)]
+pub struct PossibleMove {
+    pub column: usize,
+    pub letter: Option<Letter>,
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Move {
@@ -33,20 +39,21 @@ pub const AI_EASY: AIConfiguration = AIConfiguration {
 
 pub const AI_MEDIUM: AIConfiguration = AIConfiguration {
     search_depth: 2,
-    random_iterations: 500,
+    random_iterations: 250,
 };
 
 pub const AI_HARD: AIConfiguration = AIConfiguration {
     search_depth: 3,
-    random_iterations: 1500,
+    random_iterations: 500,
 };
 
 #[derive(Debug)]
 pub struct Board {
     pub rows: usize,
     pub columns: usize,
-    player_turn: bool,
+    pub game_type: GameType,
     pub storage: Vec<Slot>,
+    player_turn: bool,
     heights: Vec<usize>,
     moves: u32,
     move_history: Vec<Move>,
@@ -55,7 +62,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(rows: usize, columns: usize, ai: AIConfiguration) -> Self {
+    pub fn new(rows: usize, columns: usize, game_type: GameType, ai: AIConfiguration) -> Self {
         // Create board storage
         let mut storage = Vec::new();
 
@@ -88,7 +95,13 @@ impl Board {
             move_history: Vec::new(),
             column_order,
             ai,
+            game_type,
         }
+    }
+
+    /// Returns the number of moves
+    pub fn get_moves(&self) -> u32 {
+        self.moves
     }
 
     /// Returns the slot at the given row and column.
@@ -115,10 +128,6 @@ impl Board {
         }
     }
 
-    pub fn get_moves(&self) -> u32 {
-        self.moves
-    }
-
     /// Check if a given column is valid to place a piece into.
     pub fn check_column_selection(&self, column: isize) -> ColumnSelectionResult {
         if column < 0 || column as usize >= self.columns {
@@ -132,14 +141,52 @@ impl Board {
         }
     }
 
+    /// Return a vector of possible moves
+    pub fn get_possible_moves(&self) -> Vec<PossibleMove> {
+        let mut possible_moves = Vec::new();
+
+        if self.game_type == GameType::Connect4 {
+            for i in 0..self.columns {
+                let column = self.column_order[i];
+
+                if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
+                    possible_moves.push(PossibleMove {
+                        column,
+                        letter: None,
+                    });
+                }
+            }
+        } else if self.game_type == GameType::OttoToot {
+            for i in 0..self.columns {
+                let column = self.column_order[i];
+
+                if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
+                    possible_moves.push(PossibleMove {
+                        column,
+                        letter: Some(Letter::O),
+                    });
+                    possible_moves.push(PossibleMove {
+                        column,
+                        letter: Some(Letter::T),
+                    })
+                }
+            }
+        }
+
+        possible_moves
+    }
+
     /// Place a piece at a given column.
     /// Assumes the given column is valid to place into.
-    pub fn place_at_column(&mut self, column: usize, player: u32) {
+    pub fn place_at_column(&mut self, possible_move: PossibleMove, player: u32) {
+        let column = possible_move.column;
+        let letter = possible_move.letter;
+
         // Get index to place into
         let lowest_row = self.rows - self.heights[column] - 1;
 
         // Occupy the slot
-        self.get_slot_mut(lowest_row, column).place(player);
+        self.get_slot_mut(lowest_row, column).place(player, letter);
         self.heights[column] += 1;
         self.moves += 1;
         self.move_history.push(Move {
@@ -183,6 +230,16 @@ impl Board {
     /// Check if the given player has four connected pieces
     /// Return true if the player has won
     pub fn check_if_won(&self, player: u32) -> bool {
+        return if self.game_type == GameType::Connect4 {
+            self.check_if_won_connect_4(player)
+        } else if self.game_type == GameType::OttoToot {
+            self.check_if_won_toot_and_otto(player)
+        } else {
+            panic!("Unknown game type");
+        };
+    }
+
+    fn check_if_won_connect_4(&self, player: u32) -> bool {
         // Horizontal check
         for i in 0..(self.rows) {
             for j in 0..(self.columns - 3) {
@@ -238,6 +295,68 @@ impl Board {
         false
     }
 
+    fn check_if_won_toot_and_otto(&self, player: u32) -> bool {
+        let win_seq = if player == PLAYER_ID {
+            PLAYER_WINNING_SEQ
+        } else {
+            AI_WINNING_SEQ
+        };
+
+        // Horizontal check
+        for i in 0..(self.rows) {
+            for j in 0..(self.columns - 3) {
+                if self.get_slot(i, j).matches_letter(win_seq[0])
+                    && self.get_slot(i, j + 1).matches_letter(win_seq[1])
+                    && self.get_slot(i, j + 2).matches_letter(win_seq[2])
+                    && self.get_slot(i, j + 3).matches_letter(win_seq[3])
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Vertical check
+        for j in 0..(self.columns) {
+            for i in 0..(self.rows - 3) {
+                if self.get_slot(i, j).matches_letter(win_seq[0])
+                    && self.get_slot(i + 1, j).matches_letter(win_seq[1])
+                    && self.get_slot(i + 2, j).matches_letter(win_seq[2])
+                    && self.get_slot(i + 3, j).matches_letter(win_seq[3])
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Ascending diagonal check
+        for i in 3..(self.rows) {
+            for j in 0..(self.columns - 3) {
+                if self.get_slot(i, j).matches_letter(win_seq[0])
+                    && self.get_slot(i - 1, j + 1).matches_letter(win_seq[1])
+                    && self.get_slot(i - 2, j + 2).matches_letter(win_seq[2])
+                    && self.get_slot(i - 3, j + 3).matches_letter(win_seq[3])
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Descending diagonal check
+        for i in 3..(self.rows) {
+            for j in 3..(self.columns) {
+                if self.get_slot(i, j).matches_letter(win_seq[0])
+                    && self.get_slot(i - 1, j - 1).matches_letter(win_seq[1])
+                    && self.get_slot(i - 2, j - 2).matches_letter(win_seq[2])
+                    && self.get_slot(i - 3, j - 3).matches_letter(win_seq[3])
+                {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
     /// Return true if there are no more possible moves.
     pub fn check_if_no_more_moves(&self) -> bool {
         for column in 0..self.columns {
@@ -251,10 +370,12 @@ impl Board {
 
     /// Return true if the given move by the given player would be
     /// a winning move.
-    pub fn check_if_winning_move(&mut self, column: usize, player: u32) -> bool {
+    pub fn check_if_winning_move(&mut self, possible_move: PossibleMove, player: u32) -> bool {
+        let column = possible_move.column;
+
         if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
             // Place the piece in the column, check if won, and then remove the piece
-            self.place_at_column(column, player);
+            self.place_at_column(possible_move, player);
             let won = self.check_if_won(player);
             self.undo_move();
 
@@ -285,8 +406,8 @@ impl Board {
         }
 
         // Check if current player can win on next turn
-        for column in 0..columns {
-            if self.check_if_winning_move(column as usize, player) {
+        for possible_move in self.get_possible_moves() {
+            if self.check_if_winning_move(possible_move, player) {
                 return (rows * columns + 1 - moves) / 2;
             }
         }
@@ -303,21 +424,17 @@ impl Board {
         }
 
         // Compute score of all possible next moves and keep the best one
-        for i in 0..columns {
-            let column = self.column_order[i as usize];
+        for possible_move in self.get_possible_moves() {
+            self.place_at_column(possible_move, player);
+            let score = -self.negamax(depth - 1, -beta, -alpha);
+            self.undo_move();
 
-            if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
-                self.place_at_column(column as usize, player);
-                let score = -self.negamax(depth - 1, -beta, -alpha);
-                self.undo_move();
+            if score >= beta {
+                return score;
+            }
 
-                if score >= beta {
-                    return score;
-                }
-
-                if score > alpha {
-                    alpha = score;
-                }
+            if score > alpha {
+                alpha = score;
             }
         }
 
@@ -336,28 +453,32 @@ impl Board {
                 match scout_state {
                     GameState::Running => {
                         // Collect all available moves
-                        let mut m = Vec::new();
+                        let possible_moves = self.get_possible_moves();
 
-                        for column in 0..self.columns {
-                            if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
-                                m.push(column);
-                            }
-                        }
-
-                        if m.len() == 0 {
+                        if possible_moves.len() == 0 {
                             break;
                         }
 
-                        let rand_choice = m[random::<usize>() % m.len()];
+                        let rand_choice = possible_moves[random::<usize>() % possible_moves.len()];
                         let player = if self.player_turn { PLAYER_ID } else { AI_ID };
 
                         // Temporarily place piece on board
                         self.place_at_column(rand_choice, player);
 
-                        if self.check_if_won(player) {
-                            scout_state = GameState::Win(player);
-                        } else if self.check_if_no_more_moves() {
-                            scout_state = GameState::Tie;
+                        if self.game_type == GameType::Connect4 {
+                            if self.check_if_won(player) {
+                                scout_state = GameState::Win(player);
+                            } else if self.check_if_no_more_moves() {
+                                scout_state = GameState::Tie;
+                            }
+                        } else if self.game_type == GameType::OttoToot {
+                            if self.check_if_won(PLAYER_ID) {
+                                scout_state = GameState::Win(PLAYER_ID);
+                            } else if self.check_if_won(AI_ID) {
+                                scout_state = GameState::Win(AI_ID);
+                            } else if self.check_if_no_more_moves() {
+                                scout_state = GameState::Tie;
+                            }
                         }
 
                         moves += 1;
@@ -389,33 +510,34 @@ impl Board {
     }
 
     /// Get the next column the AI should play
-    pub fn get_ai_move(&mut self) -> usize {
+    pub fn get_ai_move(&mut self) -> PossibleMove {
         // Play each possible move and find the highest score
         let n = (self.rows * self.columns) as i32;
         let mut highest_score = i32::MIN;
-        let mut choice = 0;
+        let mut choice = PossibleMove {
+            column: 0,
+            letter: None
+        };
 
-        for column in 0..self.columns {
-            if self.check_column_selection(column as isize) == ColumnSelectionResult::Valid {
-                // Place the piece in the column, see if score is highest, and then remove the piece
-                self.place_at_column(column, AI_ID);
+        for possible_move in self.get_possible_moves() {
+            // Place the piece in the column, see if score is highest, and then remove the piece
+            self.place_at_column(possible_move, AI_ID);
 
-                let mut score = (-self.negamax(self.ai.search_depth, -n / 2, n / 2)) << 14;
+            let mut score = (-self.negamax(self.ai.search_depth, -n / 2, n / 2)) << 14;
 
-                // 0 is returned if we reached maximum search depth
-                // Use random search instead if that happens
-                if score == 0 {
-                    score = self.random_search();
-                }
-
-                if score > highest_score {
-                    highest_score = score;
-                    choice = column;
-                }
-
-                self.undo_move();
-                // println!("Column {} has a score of {}.", column + 1, score);
+            // 0 is returned if we reached maximum search depth
+            // Use random search instead if that happens
+            if score == 0 {
+                score = self.random_search();
             }
+
+            if score > highest_score {
+                highest_score = score;
+                choice = possible_move;
+            }
+
+            self.undo_move();
+            // println!("Column {} has a score of {}.", column + 1, score);
         }
 
         // println!("Selected column {} with a score of {}.", choice + 1, highest_score);
@@ -443,9 +565,9 @@ impl Board {
                 let slot = self.get_slot(i, j);
 
                 if i == latest_move.row && j == latest_move.column {
-                    print!("*{}*|", slot.to_string());
+                    print!("*{}*|", slot.to_string(self.game_type));
                 } else {
-                    print!(" {} |", slot.to_string());
+                    print!(" {} |", slot.to_string(self.game_type));
                 }
             }
 

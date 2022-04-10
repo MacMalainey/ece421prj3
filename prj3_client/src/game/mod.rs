@@ -1,4 +1,5 @@
 pub use board::*;
+use shared_types::types::GameType;
 pub use slot::*;
 
 pub mod board;
@@ -20,8 +21,8 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(rows: usize, columns: usize, ai: AIConfiguration) -> Self {
-        let board = Board::new(rows, columns, ai);
+    pub fn new(rows: usize, columns: usize, game_type: GameType, ai: AIConfiguration) -> Self {
+        let board = Board::new(rows, columns, game_type, ai);
 
         Self {
             board,
@@ -47,9 +48,11 @@ impl Game {
 
     /// Check if a win or tie has occurred
     /// player is the player that just performed a move
-    pub fn check_state(&mut self, player: u32) -> GameState {
-        if self.board.check_if_won(player) {
-            self.state = GameState::Win(player);
+    pub fn check_state(&mut self) -> GameState {
+        if self.board.check_if_won(PLAYER_ID) {
+            self.state = GameState::Win(PLAYER_ID);
+        } else if self.board.check_if_won(AI_ID) {
+            self.state = GameState::Win(AI_ID);
         } else if self.board.check_if_no_more_moves() {
             self.state = GameState::Tie;
         } else {
@@ -61,9 +64,13 @@ impl Game {
 
     /// Begin process for player turn
     /// Returns true on success
-    pub fn player_turn(&mut self, column_selection: usize) -> bool {
+    pub fn player_turn(&mut self, column_selection: usize, letter: Option<Letter>) -> bool {
         if self.board.check_column_selection(column_selection as isize) == ColumnSelectionResult::Valid {
-            self.board.place_at_column(column_selection, PLAYER_ID);
+            let possible_move = PossibleMove {
+                column: column_selection,
+                letter
+            };
+            self.board.place_at_column(possible_move, PLAYER_ID);
             return true;
         }
 
@@ -72,9 +79,8 @@ impl Game {
 
     /// Begin process for AI turn
     pub fn ai_turn(&mut self) {
-        let column_selection = self.board.get_ai_move();
-        self.board.place_at_column(column_selection, AI_ID);
-        self.check_state(AI_ID);
+        let possible_move = self.board.get_ai_move();
+        self.board.place_at_column(possible_move, AI_ID);
     }
 
     pub fn get_num_moves(&self) -> u32 {
