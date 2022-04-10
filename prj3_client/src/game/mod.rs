@@ -16,6 +16,7 @@ pub enum GameState {
 }
 
 pub struct Game {
+    game_type: GameType,
     board: Board,
     state: GameState,
 }
@@ -25,6 +26,7 @@ impl Game {
         let board = Board::new(rows, columns, game_type, ai);
 
         Self {
+            game_type,
             board,
             state: GameState::Running,
         }
@@ -40,7 +42,7 @@ impl Game {
         let mut result = Vec::new();
 
         for slot in self.board.storage.clone() {
-            result.push((slot.get_player() as i32, "".to_string()));
+            result.push((slot.get_player() as i32, slot.to_string(self.game_type)));
         }
 
         result

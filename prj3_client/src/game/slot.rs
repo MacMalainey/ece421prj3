@@ -47,23 +47,15 @@ impl Slot {
 
     pub fn to_string(&self, mode: GameType) -> String {
         return if self.player == 0 {
-            return String::from("-");
+            return String::from("");
         } else {
             if mode == GameType::Connect4 {
-                if self.player == PLAYER_ID {
-                    String::from("1")
-                } else if self.player == AI_ID {
-                    String::from("2")
-                } else {
-                    panic!("Unknown player.")
-                }
+                String::from("")
             } else {
                 if self.letter == Letter::T {
                     String::from("T")
-                } else if self.letter == Letter::O {
-                    String::from("O")
                 } else {
-                    panic!("Unknown letter type.")
+                    String::from("O")
                 }
             }
         }
