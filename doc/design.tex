@@ -267,8 +267,14 @@ See the \href{run:../README.md}{readme} for information on setting up the enviro
 \section{Key Design Considerations}
 
 \subsection{Computerized Board}
+Using a computerized board provides several key advantages over a physical board. It allows a player to play against a computerized opponent meaning a player can play and have fun by themselves. It also allows the tracking of games and statistics, allowing players to compare themselves to other players. Using a computerized board also removes the need to manually check if a player has won or lost. A computerized board also prevents cheating. \\
+
+In our program, the board state is represented as a vector with length \mintinline{text}{rows * columns}. We then provide methods that abstract access to the board state as if it were a matrix: for example, to access the slot at row 3 and column 5, we can calculate the index in the vector as \mintinline{text}{3 * columns + 5}.
 
 \subsection{Computerized Opponents}
+A computerized opponent is essentially code that tries to makes smart decisions in order to win (i.e. beat the other player). This is done by attempting to determine the best move from the set of possible moves. This is done by giving each possible move a score by using an algorithm. 
+
+
 
 \subsection{Interface Components}
 
