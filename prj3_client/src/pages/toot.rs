@@ -60,39 +60,29 @@ impl Component for Toot {
         let split: Vec<&str> = self.selected_board_size.split("x").collect();
         let columns = split[0].to_string();
         let rows = split[1].to_string();
-        // html! {{if self.should_start {
-        //     html! {
-        //         <PlayScreen
-        //             name={self.name.clone()}
-        //             selected_difficulty = {self.selected_difficulty.clone()}
-        //             selected_board_size = {self.selected_board_size.clone()}
-        //             selected_disc_color = {self.selected_disc_color.clone()}
-        //             columns = {columns}
-        //             rows = {rows}
-        //         />
-        //     }
-        // } else {
-        //     html! {
-        //         <GameSetup
-        //             name = {self.name.clone()}
-        //             steps= {self.steps.clone()}
-        //             description = {self.description.clone()}
-        //             difficulties = {self.difficulties.clone()}
-        //             board_sizes = {self.board_sizes.clone()}
-        //             disc_colors = {self.disc_colors.clone()}
-        //             start_pressed = {ctx.link().callback(Msg::StartPressed).clone()}
-        //         />
-        //     }
-        // }}}
-        html! {
-            <PlayScreen
-                name={self.name.clone()}
-                selected_difficulty = {self.selected_difficulty.clone()}
-                selected_board_size = {self.selected_board_size.clone()}
-                selected_disc_color = {self.selected_disc_color.clone()}
-                columns = {columns}
-                rows = {rows}
-            />
-        }
+        html! {{if self.should_start {
+            html! {
+                <PlayScreen
+                    name={self.name.clone()}
+                    selected_difficulty = {self.selected_difficulty.clone()}
+                    selected_board_size = {self.selected_board_size.clone()}
+                    selected_disc_color = {self.selected_disc_color.clone()}
+                    columns = {columns}
+                    rows = {rows}
+                />
+            }
+        } else {
+            html! {
+                <GameSetup
+                    name = {self.name.clone()}
+                    steps= {self.steps.clone()}
+                    description = {self.description.clone()}
+                    difficulties = {self.difficulties.clone()}
+                    board_sizes = {self.board_sizes.clone()}
+                    disc_colors = {self.disc_colors.clone()}
+                    start_pressed = {ctx.link().callback(Msg::StartPressed).clone()}
+                />
+            }
+        }}}
     }
 }
