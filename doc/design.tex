@@ -258,15 +258,6 @@ In \mintinline{text}{main.rs}, we defined routes to the following pages:
   \item \mintinline{text}{<PlayScreen/>}: A component for the game. This generates the board and and handles input for the game.
 \end{itemize}
 
-\subsection{Design choices for interface components}
-There are many choices that exist for interface components:
-\begin{itemize}
-  \item Color: an important design choice especially when designing for color vision deficiency. By choosing colors carefully and with contrast, we can accommodate for users with color vision deficiency. For example, a common color combination that is difficult for people who experience color blindness is red and green, so designers should avoid using them side by side.
-  \item Font: having a readable font is essential, but tactfully using font sizes can be equally important. For example, having headers that are larger and more bold helps the reader recognize the text as being more important to read. Thinner or more small font can be used for descriptions or less important text.
-  \item Dimension of windows: users should be able to use our website on monitors of all different sizes and devices of all kinds. For the design to still look appealing across devices, each component should be designed with the variation of dimensions in mind.
-  \item Input types: there are a variety of different ways to take in user input and some are more intuitive in certain situations than others. We chose to make choosing the difficulty, board size, and disc color use radio buttons. Radio groups are a good design choice for this situation because only one of the radio buttons should be selected at a time. Similarly, getting text input for the log in/sign up information is a method that is intuitive and familiar to most users. Another input type we used was for the game. When selecting a column to place your piece, the entire column is highlighted when you hover on any cell in that column. This helps indicate to the user that you only have choice over the column and not the specific cell.
-\end{itemize} 
-
 \section{Local Setup}
 
 \subsection{Notice}
@@ -298,11 +289,18 @@ Using a computerized board provides several key advantages over a physical board
 In our program, the board state is represented as a vector with length \mintinline{text}{rows * columns}. We then provide methods that abstract access to the board state as if it were a matrix: for example, to access the slot at row 3 and column 5, we can calculate the index in the vector as \mintinline{text}{3 * columns + 5}.
 
 \subsection{Computerized Opponents}
-A computerized opponent is essentially code that tries to makes smart decisions in order to win (i.e. beat the other player). This is done by attempting to determine the best move from the set of possible moves. This is done by giving each possible move a score by using an algorithm. 
+A computerized opponent is essentially code that tries to makes smart decisions in order to win (i.e. beat the other player). This is done by attempting to determine the best move from the set of possible moves. This is done by giving each possible move a score by using an algorithm. \\
 
-
+We use alpha-beta pruning to efficiently evaluate the score of a move (more on this \href{https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning}{here}). We allow the user to select from 3 difficulties. To vary the difficulty, the algorithm performs less or more recursive calls before terminating.
 
 \subsection{Interface Components}
+There are many choices that exist for interface components:
+\begin{itemize}
+  \item Color: an important design choice especially when designing for color vision deficiency. By choosing colors carefully and with contrast, we can accommodate for users with color vision deficiency. For example, a common color combination that is difficult for people who experience color blindness is red and green, so designers should avoid using them side by side.
+  \item Font: having a readable font is essential, but tactfully using font sizes can be equally important. For example, having headers that are larger and more bold helps the reader recognize the text as being more important to read. Thinner or more small font can be used for descriptions or less important text.
+  \item Dimension of windows: users should be able to use our website on monitors of all different sizes and devices of all kinds. For the design to still look appealing across devices, each component should be designed with the variation of dimensions in mind.
+  \item Input types: there are a variety of different ways to take in user input and some are more intuitive in certain situations than others. We chose to make choosing the difficulty, board size, and disc color use radio buttons. Radio groups are a good design choice for this situation because only one of the radio buttons should be selected at a time. Similarly, getting text input for the log in/sign up information is a method that is intuitive and familiar to most users. Another input type we used was for the game. When selecting a column to place your piece, the entire column is highlighted when you hover on any cell in that column. This helps indicate to the user that you only have choice over the column and not the specific cell.
+\end{itemize} 
 
 \subsection{Exception Handling}
 
@@ -314,9 +312,12 @@ Since panicking in a GUI app might cause the app to freeze (especially a web app
 \subsection{Development Tools}
 
 Development tools are important to have to be able to debug and verify a system outside of the server and client.  We developed an Admin CLI tool to allow for us to create test data or find data in the database to verify the functionality of the server and web app.
-The CLI does NOT have support for directly testing the server APIs directly, instead other tools such as \href{https://www.postman.com}{Postman} were used to verify the API endpoints against test data.
+The CLI does NOT have support for directly testing the server APIs directly, instead other tools such as \href{https://www.postman.com}{Postman} were used to verify the API endpoints against test data. \\
+
+Furthermore, for development of the games and AI, we created a CLI for testing the game before combining it with our frontend. The CLI prompted the user to enter the number of rows, columns, game type (Connect4 or TOOT and OTTO), and AI difficulty. The player can then play a move by typing the number of the column they want to select (and the piece type if playing TOOT and OTTO). The board is printed out after each move.
 
 \subsection{UI Design Patterns}
+
 
 \section{Known Issues}
 
