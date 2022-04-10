@@ -176,8 +176,6 @@ fn main() {
 
     wasm_bindgen_futures::spawn_local(async {
         let session_user = mutations::auth::verify().await;
-
-        log::debug!("Session: {:#?}", session_user);
     
         yew::start_app_with_props::<App>(AppLaunchProps{ session_user });
     })
