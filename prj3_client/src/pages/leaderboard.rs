@@ -8,7 +8,7 @@ use crate::mutations::match_records::{MatchRecordQuery, MatchRecordQueryOptions}
 
 #[derive(PartialEq)]
 struct LeaderboardState {
-    isOnConnect4: bool,
+    is_on_connect4: bool,
     error: Option<String>,
 }
 
@@ -22,14 +22,14 @@ pub enum Msg {
 pub fn leaderboard() -> Html {
     // Get state
     let state = use_state_eq(|| LeaderboardState {
-        isOnConnect4: true,
+        is_on_connect4: true,
         error: None
     });
 
     let should_refresh_query = use_mut_ref(|| true);
 
     // Get the option to filter the game
-    let game_filter = if state.isOnConnect4 {
+    let game_filter = if state.is_on_connect4 {
         GameType::Connect4
     } else {
         GameType::OttoToot
@@ -101,7 +101,7 @@ pub fn leaderboard() -> Html {
     let mut connect_class = "is-active";
     let mut toot_class = "";
 
-    if !state.isOnConnect4 {
+    if !state.is_on_connect4 {
         connect_class = "";
         toot_class = "is-active";
     }
@@ -112,7 +112,7 @@ pub fn leaderboard() -> Html {
         Callback::from(move |_| {
             *should_refresh_query.borrow_mut() = true;
             state.set(LeaderboardState {
-                isOnConnect4: false,
+                is_on_connect4: false,
                 error: None
             })
         })
@@ -124,7 +124,7 @@ pub fn leaderboard() -> Html {
         Callback::from(move |_| {
             *should_refresh_query.borrow_mut() = true;
             state.set(LeaderboardState {
-                isOnConnect4: true,
+                is_on_connect4: true,
                 error: None
             })
         })
@@ -133,7 +133,7 @@ pub fn leaderboard() -> Html {
     html! {
             <div class="container mt-6" style={"max-width:500px;"}>
                 {
-                    if state.isOnConnect4 {
+                    if state.is_on_connect4 {
                         html! {
                             <h1 class="title has-text-centered mt-6">{"Connect 4 Leaderboard"}</h1>
                         }

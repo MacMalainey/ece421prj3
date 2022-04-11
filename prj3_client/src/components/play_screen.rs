@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::ops::Deref;
 use std::rc::Rc;
 
 use yew::prelude::*;
@@ -189,7 +188,7 @@ pub fn play_screen(props: &Props) -> Html {
     // Callback for selecting t
     let on_t_selected = {
         let state = state.clone();
-        let props = props.clone();
+        let _props = props.clone();
         let game = game.clone();
         Callback::from(move |_| {
             state.set(PlayScreenState {
@@ -203,7 +202,7 @@ pub fn play_screen(props: &Props) -> Html {
     // Callback for selecting o
     let on_o_selected = {
         let state = state.clone();
-        let props = props.clone();
+        let _props = props.clone();
         let game = game.clone();
         Callback::from(move |_| {
             state.set(PlayScreenState {
