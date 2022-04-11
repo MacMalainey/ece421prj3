@@ -1,4 +1,4 @@
-use crate::game::{AI_ID, GameType, PLAYER_ID};
+use crate::game::GameType;
 use crate::game::Letter::*;
 
 const NO_PLAYER: u32 = 0;

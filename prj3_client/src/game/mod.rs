@@ -97,8 +97,8 @@ impl Game {
     }
 
     /// Print the board
-    pub fn print_board(&self) {
+    pub fn _print_board(&self) {
         println!("Current board:");
-        self.board.print();
+        self.board._print();
     }
 }

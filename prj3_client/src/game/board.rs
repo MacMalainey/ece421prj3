@@ -572,7 +572,7 @@ impl Board {
     }
 
     /// Print the board.
-    pub fn print(&self) {
+    pub fn _print(&self) {
         let latest_move = match self.move_history.last() {
             Some(latest_move) => {
                 latest_move
