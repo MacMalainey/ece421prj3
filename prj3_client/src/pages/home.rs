@@ -1,4 +1,23 @@
 use yew::prelude::*;
+use yew_router::prelude::*;
+
+/// Routes
+#[derive(Clone, Routable, PartialEq)]
+enum Route {
+    #[at("/")]
+    Home,
+    #[at("/login")]
+    Login,
+    #[at("/leaderboard")]
+    Leaderboard,
+    #[at("/games/connect4")]
+    Connect4,
+    #[at("/games/toototto")]
+    TootOtto,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
+}
 
 pub struct Home;
 impl Component for Home {
@@ -14,63 +33,49 @@ impl Component for Home {
             <div class="tile is-ancestor is-vertical">
                 <div class="tile is-child hero">
                     <div class="hero-body container pb-0">
-                        <h1 class="title has-text-centered is-3">{ "Bored?" }</h1>
+                        <h1 class="title has-text-centered is-2">{ "Bored?" }</h1>
                         <h2 class="subtitle">{ "We got games!" }</h2>
                     </div>
                 </div>
 
                 <div class="tile is-child">
-                    <figure class="image is-3by1">
-                        <img alt="banner for homepage." src="assets/home_banner.jpg" />
-                    </figure>
+                        <img alt="banner for homepage." src="assets/home_banner1.jpg" />
                 </div>
 
                 <div class="tile is-parent container">
-                    { self.view_info_tiles() }
+                    { self.game_cards() }
                 </div>
             </div>
         }
     }
 }
 impl Home {
-    fn view_info_tiles(&self) -> Html {
+    fn game_cards(&self) -> Html {
         html! {
-            <>
-                <div class="tile is-parent">
-                    <div class="tile is-child box">
-                        <p class="title">{ "Yes, we got games!" }</p>
-                        <p class="subtitle">{ "With more being added soon!" }</p>
+            <div style={"width:800px; margin-bottom: 80px"}>
+                <div class="title">{ "Games" }</div>
+                <div>
+                    <div class="tile is-parent" style={"display:inline-block;  width: 300px"}>
+                        <div class="tile is-child box" style={"padding-right: 30px; padding-left: 30px;"}>
+                            <p class="subtitle has-text-centered">{ "Connect 4" }</p>
+                            <img alt="banner for homepage." src="assets/connect.jpg" />
+                            <Link<Route> to={Route::Connect4}>
+                                <button class="button is-primary my-3" style={"width: 100%;"}>{"Play"}</button>
+                            </Link<Route>>
+                        </div>
+                    </div>
 
-                        <div class="content">
-                            {r#"
-                            A yew is a small to medium-sized evergreen tree, growing 10 to 20 metres tall, with a trunk up to 2 metres in diameter.
-                            The bark is thin, scaly brown, coming off in small flakes aligned with the stem.
-                            The leaves are flat, dark green, 1 to 4 centimetres long and 2 to 3 millimetres broad, arranged spirally on the stem,
-                            but with the leaf bases twisted to align the leaves in two flat rows either side of the stem,
-                            except on erect leading shoots where the spiral arrangement is more obvious.
-                            The leaves are poisonous.
-                            "#}
+                    <div class="tile is-parent" style={"display:inline-block; width: 300px"}>
+                        <div class="tile is-child box" style={"padding-right: 30px; padding-left: 30px;"}>
+                            <p class="subtitle has-text-centered">{ "TOOT and OTTO" }</p>
+                            <img alt="banner for homepage." src="assets/toot.jpg" />
+                            <Link<Route> to={Route::TootOtto}>
+                                <button class="button is-primary my-3" style={"width: 100%;"}>{"Play"}</button>
+                            </Link<Route>>
                         </div>
                     </div>
                 </div>
-
-                <div class="tile is-parent">
-                    <div class="tile is-child box">
-                        <p class="title">{ "Leaderboards!" }</p>
-
-                        <div class="content">
-                            { "We're a small team of just 2" }
-                            <sup>{ 64 }</sup>
-                            { " members working tirelessly to bring you the low-effort yew content we all desperately crave." }
-                            <br />
-                            {r#"
-                                We put a ton of effort into fact-checking our posts.
-                                Some say they read like a Wikipedia article - what a compliment!
-                            "#}
-                        </div>
-                    </div>
-                </div>
-            </>
+            </div>
         }
     }
 }
