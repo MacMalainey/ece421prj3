@@ -7,18 +7,26 @@ use crate::game::{AI_ID, GameType, PLAYER_ID};
 use super::GameState;
 use super::slot::*;
 
+/// Struct for a possible move.
+/// Contains the column and a letter (for TOOT and OTTO)
 #[derive(Clone, Copy, Debug)]
 pub struct PossibleMove {
     pub column: usize,
     pub letter: Option<Letter>,
 }
 
+/// Struct for a move that has been played.
+/// Contains the row and column the piece ends up being played at.
+/// Used to keep track of move history.
 #[derive(Clone, Copy, Debug)]
 pub struct Move {
     pub row: usize,
     pub column: usize,
 }
 
+/// Enum for result of checking if a piece can be placed at a column.
+/// Can be either a valid column to place a piece in, full, or
+/// the column may not exist for some reason.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ColumnSelectionResult {
     Valid,
@@ -26,27 +34,46 @@ pub enum ColumnSelectionResult {
     ColumnDoesNotExist,
 }
 
+/// Configuration for the AI.
+/// search_depth is used for the maximum depth the alpha-beta pruning
+/// algorithm searches. random_iterations is the number of random moves
+/// another algorithm uses while checking for score.
 #[derive(Clone, Copy, Debug)]
 pub struct AIConfiguration {
     search_depth: u32,
     random_iterations: u32,
 }
 
+/// Easy AI config
 pub const AI_EASY: AIConfiguration = AIConfiguration {
     search_depth: 2,
     random_iterations: 2,
 };
 
+/// Medium AI config
 pub const AI_MEDIUM: AIConfiguration = AIConfiguration {
     search_depth: 2,
     random_iterations: 250,
 };
 
+/// Hard AI config
 pub const AI_HARD: AIConfiguration = AIConfiguration {
     search_depth: 3,
     random_iterations: 500,
 };
 
+/// Board definition.
+/// Contains:
+/// rows: # of rows
+/// columns: # of columns
+/// game_type: connect4 or TOOT and OTTO
+/// storage: stores the board state
+/// player_turn: whether it is the player's turn or not
+/// heights: essentially used to quickly determine the number of pieces in a column
+/// moves: number of moves played so far
+/// move_history: stack of past moves
+/// column_order: order in which the AI attempts tries moves
+/// ai: AI configuration
 #[derive(Debug)]
 pub struct Board {
     pub rows: usize,

@@ -16,42 +16,63 @@ use crate::mutations::match_records::UserMatchRecordMutation;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
+    /// Name of game
     pub name: String,
+    /// Difficulty
     pub selected_difficulty: String,
+    /// Disc Color
     pub selected_disc_color: String,
+    /// Board size
     pub selected_board_size: String,
+    /// Columns
     pub columns: String,
+    /// Rows
     pub rows: String,
 }
 
+/// State for play screen
 struct PlayScreenState {
+    /// Game state that gets updated
     pub game_state: GameState,
+    /// Board state that gets updated
     pub board_state: Vec<(i32, String)>,
-    pub is_t: bool,
+    /// For TOOT and OTTO -> type of chip to place 
+    pub is_t: bool, 
 }
 
+/// Factory object for creating callbacks when a column gets pressed
 struct BoardUpdateCallbackFactory {
+    /// The state handle for updating
     state: UseStateHandle<PlayScreenState>,
+    /// Shared reference to the game object
     game: Rc<RefCell<Game>>,
+    /// Mutation for writing the record when game ends
     record_mutation: UseMutationValueHandle<UserMatchRecordMutation>,
+    /// Game type
     game_type: GameType,
+    /// Cpu level
     cpu_level: CpuLevel,
+    /// If the user is authenticated as guest
     is_guest: bool,
 }
 
 impl BoardUpdateCallbackFactory {
 
+    /// Whether or not the game is finished
     fn is_game_finished(&self) -> bool {
         self.game.borrow().get_state() != GameState::Running
     }
 
+    /// Get a callback for pressing a column
     fn get_callback_for<I>(&self, i: usize) -> Callback<I> {
+        // Clone needed variables
         let game = self.game.clone();
         let state = self.state.clone();
         let record_mutation = self.record_mutation.clone();
         let game_id = self.game_type;
         let cpu_level = self.cpu_level;
         let is_guest = self.is_guest;
+        // Make callback
         Callback::from(move |_| {
             let mut game_mut = game.borrow_mut();
 
@@ -107,14 +128,18 @@ impl BoardUpdateCallbackFactory {
     }
 }
 
+/// Component for the play screen
 #[function_component(PlayScreen)]
 pub fn play_screen(props: &Props) -> Html {
+    // Get props
     let name = props.name.clone();
     let selected_color = props.selected_disc_color.clone();
     let mode = props.selected_difficulty.clone();
 
+    // Get AI config
     let (ai_config, cpu_level) = get_ai_config(&mode);
 
+    // Spawn a reference to the game that stays throughout this component's lifetime
     let game = use_mut_ref(|| {
         Game::new(
             props.rows.clone().parse::<usize>().unwrap(),
@@ -124,6 +149,7 @@ pub fn play_screen(props: &Props) -> Html {
         )
     });
 
+    // Get the state
     let state = {
         let game = game.clone();
         use_state(move || {
@@ -135,10 +161,13 @@ pub fn play_screen(props: &Props) -> Html {
         })
     };
 
+    // Get the user credentials
     let user = use_atom_value::<AuthCredentials>();
 
+    // Get the handle for the match record save mutation
     let record_mutation = use_mutation_value::<UserMatchRecordMutation>();
 
+    // Get game type
     let (p1, p2, game_type) = if name == "TOOT and OTTO" {
         ("You - TOOT", "Computer - OTTO", GameType::OttoToot)
     } else {
@@ -147,6 +176,7 @@ pub fn play_screen(props: &Props) -> Html {
 
     let is_guest = *user == AuthCredentials::Guest;
 
+    // Create callback factory
     let cb_factory = BoardUpdateCallbackFactory {
         state: state.clone(),
         game: game.clone(),
@@ -156,6 +186,7 @@ pub fn play_screen(props: &Props) -> Html {
         is_guest
     };
 
+    // Callback for selecting t
     let on_t_selected = {
         let state = state.clone();
         let props = props.clone();
@@ -169,6 +200,7 @@ pub fn play_screen(props: &Props) -> Html {
         })
     };
 
+    // Callback for selecting o
     let on_o_selected = {
         let state = state.clone();
         let props = props.clone();
@@ -182,6 +214,7 @@ pub fn play_screen(props: &Props) -> Html {
         })
     };
 
+    // Get the game type
     let game_type = get_game_type(name.as_str());
     let is_toot_and_otto = game_type == GameType::OttoToot;
 
@@ -227,6 +260,7 @@ pub fn play_screen(props: &Props) -> Html {
             </div>
             <div class="card mt-2">
                 {
+                    // Render the grid
                     render_grid(
                         props.selected_board_size.clone(),
                         state.board_state.clone(),
@@ -236,13 +270,16 @@ pub fn play_screen(props: &Props) -> Html {
                 }
                 {
                     if state.game_state == GameState::Running {
+                        // Render the buttons on top of the grid
                         render_col_buttons(
                             cb_factory,
                             props.selected_board_size.clone(),
                         )
                     } else {
+                        // Render the result screen
                         let result = get_result_text(state.game_state).to_string();
 
+                        // Restart game state callback
                         let on_restart_clicked = {
                             let props = props.clone();
                             Callback::from(move |_| {
@@ -279,6 +316,7 @@ pub fn play_screen(props: &Props) -> Html {
     }
 }
 
+/// Parses the game type
 fn get_game_type(diff: &str) -> GameType {
     match diff {
         "TOOT and OTTO" => {
@@ -290,6 +328,7 @@ fn get_game_type(diff: &str) -> GameType {
     }
 }
 
+/// Parses the AI config
 fn get_ai_config(diff: &str) -> (AIConfiguration, CpuLevel) {
     match diff {
         "Easy" => {
@@ -307,6 +346,7 @@ fn get_ai_config(diff: &str) -> (AIConfiguration, CpuLevel) {
     }
 }
 
+/// Returns appropriate result text
 fn get_result_text(state: GameState) -> &'static str {
     if state == GameState::Tie {
         "You tied"
@@ -317,6 +357,7 @@ fn get_result_text(state: GameState) -> &'static str {
     }
 }
 
+/// Returns the opponent's color as a hex string
 fn get_opponent_color(selected_disc_color: String, is_same: bool) -> &'static str {
     if is_same {
         if selected_disc_color == "#FF8E8E" {
@@ -333,6 +374,7 @@ fn get_opponent_color(selected_disc_color: String, is_same: bool) -> &'static st
     }
 }
 
+/// Renders the board game grid
 fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, selected_disc_color: String, name: String) -> Html {
     let game_type = get_game_type(name.as_str());
     let is_toot_and_otto = game_type == GameType::OttoToot;
@@ -376,6 +418,7 @@ fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, sel
     }
 }
 
+/// Renders the column buttons
 fn render_col_buttons(
     cb_factory: BoardUpdateCallbackFactory,
     selected_board_size: String
@@ -403,6 +446,7 @@ fn render_col_buttons(
     }
 }
 
+/// Renders the record save text
 fn render_record_save(mutation_result: Option<MutationResult<UserMatchRecordMutation>>, is_guest: bool) -> Html {
 
     html! {

@@ -12,10 +12,12 @@ use menus::*;
 mod types;
 mod menus;
 
+/// Helper function for printing info text
 fn print_info(input: String) {
     println!("{}", Colour::Blue.paint(input))
 }
 
+/// Helper function for printing error text
 fn print_err(input: String) {
     eprintln!("{}", Colour::Red.bold().paint(input))
 }
@@ -23,22 +25,26 @@ fn print_err(input: String) {
 fn main() {
     println!("{}\n", Style::new().bold().paint("Project 3 Admin Console"));
 
+    // Get database path
     let path = ConnectionConfigMenu::prompt_default();
 
     print!("Connecting to local database at {}... ",
         Colour::Cyan.underline().paint(&path),
     );
 
+    // Setup connection
     let conn = SqliteConnection::establish(&path).expect("Unable to connect to database");
     
     println!("{}", Style::new().bold().paint("Connected!"));
 
+    // Setup/update database if necessary
     print!("Running database migrations... ");
 
     run_migrations(&conn).expect("Database migration failed");
 
     println!("{}", Style::new().bold().paint("Finished!"));
 
+    // Run main menu loop
     loop {
         let action = ActionMenu::prompt_default();
         match action {
@@ -58,6 +64,7 @@ fn main() {
     println!("{}", Style::new().bold().paint("Exiting..."));
 }
 
+/// Add a user
 fn add_user(conn: &SqliteConnection) {
     let new_user = NewUserMenu::prompt_default();
     
@@ -73,6 +80,7 @@ fn add_user(conn: &SqliteConnection) {
     }
 }
 
+/// Delete a user
 fn delete_user(conn: &SqliteConnection) {
     let id = UserIdMenu::prompt_default();
 
@@ -86,6 +94,7 @@ fn delete_user(conn: &SqliteConnection) {
     }
 }
 
+/// List users
 fn list_users(conn: &SqliteConnection) {
 
     while let Some(id) = UserIdMenu::prompt_default() {
@@ -114,6 +123,7 @@ fn list_users(conn: &SqliteConnection) {
 
 }
 
+/// Add a new record
 fn add_record(conn: &SqliteConnection) {
     use shared_types::types::UserAuthToken;
 
@@ -125,6 +135,7 @@ fn add_record(conn: &SqliteConnection) {
     }
 }
 
+/// Delete a record
 fn delete_record(conn: &SqliteConnection) {
     if let Some(id) = MatchRecordIdMenu::prompt_default() {
         match match_records::delete(conn, id) {
@@ -134,6 +145,7 @@ fn delete_record(conn: &SqliteConnection) {
     }
 }
 
+/// List user records
 fn list_user_records(conn: &SqliteConnection) {
     use shared_types::types::MatchQuerySortBy;
 

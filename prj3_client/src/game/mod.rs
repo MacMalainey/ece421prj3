@@ -8,6 +8,9 @@ pub mod slot;
 pub const PLAYER_ID: u32 = 1;
 pub const AI_ID: u32 = 2;
 
+/// Stores the game state. A game can be
+/// running, win, or tie. If a game is won,
+/// it contains the ID of the player that won.
 #[derive(PartialEq, Copy, Clone)]
 pub enum GameState {
     Running,
@@ -15,6 +18,10 @@ pub enum GameState {
     Tie,
 }
 
+/// Game
+/// game_type: Connect4 or TOOT and OTTO
+/// board: stores the board of the current game
+/// state: current game state (running, win, or tie)
 pub struct Game {
     game_type: GameType,
     board: Board,

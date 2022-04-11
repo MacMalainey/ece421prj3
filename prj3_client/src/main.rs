@@ -76,8 +76,10 @@ fn app(props: &AppLaunchProps) -> Html {
 #[function_component(NavBar)]
 fn nav_bar(props: &NavBarProps) -> Html {
 
+    // Get credentials
     let credentials = use_atom::<AuthCredentials>();
 
+    // If we are passed in valid credentials we update the store after we render
     {
         let credentials = credentials.clone();
         use_effect_with_deps(
@@ -91,6 +93,7 @@ fn nav_bar(props: &NavBarProps) -> Html {
         )
     }
 
+    // Turn into Option
     let user = match *credentials {
         AuthCredentials::Verified(ref info) => Some(info.user_id.clone()),
         _ => None,
@@ -125,6 +128,7 @@ fn nav_bar(props: &NavBarProps) -> Html {
                 <div class="navbar-end">
                     {
                         if let Some(username) = user {
+                            // Show logout button if we are logged in
                             let on_logout = 
                                 Callback::from(move |_| {
                                     let credentials = credentials.clone();
@@ -156,6 +160,7 @@ fn nav_bar(props: &NavBarProps) -> Html {
                                 </div>
                             }
                         } else {
+                            // Show login button otherwise
                             html! {
                                 <Link<Route> classes={classes!("navbar-item")} to={Route::Login}>
                                     { "Login" }

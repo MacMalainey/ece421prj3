@@ -3,9 +3,12 @@ use std::str::FromStr;
 
 use terminal_menu::{TerminalMenuStruct, TerminalMenuItem};
 
+/// Shorthand type for no error
 type NoErr = Option<Infallible>;
+/// Shorthand type for result return type
 type MResult<T> = Result<<T as FromMenu>::Output, <T as FromMenu>::Error>;
 
+/// Trait for prompting a menu and returning the output
 pub trait Prompt: ToMenu + FromMenu {
     fn prompt(params: &<Self as ToMenu>::Params) -> <Self as FromMenu>::Output {
         let mut previous_error = None;
@@ -20,8 +23,10 @@ pub trait Prompt: ToMenu + FromMenu {
         }
     }
 }
+/// Blanket implementation
 impl <T: ToMenu + FromMenu> Prompt for T {}
 
+/// Trait for prompting a menu using the arg's return type from Default
 pub trait DefaultPrompt: Prompt
 where
     <Self as ToMenu>::Params: Default
@@ -30,8 +35,10 @@ where
         Self::prompt(&<Self as ToMenu>::Params::default())
     }
 }
+/// Blanket implementation
 impl <T: ToMenu + FromMenu> DefaultPrompt for T where <T as ToMenu>::Params: Default {}
 
+/// Trait for returning a menu
 pub trait ToMenu: FromMenu {
     type Params;
     fn to_menu(
@@ -40,18 +47,21 @@ pub trait ToMenu: FromMenu {
     ) -> Vec<TerminalMenuItem>;
 }
 
+/// Trait for parsing a menu
 pub trait FromMenu {
     type Output;
     type Error;
     fn from_menu(menu: &mut TerminalMenuStruct) -> MResult<Self>;
 }
 
+/// Helper error text coloring
 fn error_text(text: &str) -> String {
     use ansi_term::Color;
 
     Color::Red.bold().paint(text).to_string()
 }
 
+/// Helper function for marking an item as missing if required
 fn required_field(item: TerminalMenuItem, mark_missing: bool) -> TerminalMenuItem {
     use crossterm::style::Color;
 
@@ -62,6 +72,7 @@ fn required_field(item: TerminalMenuItem, mark_missing: bool) -> TerminalMenuIte
     }
 }
 
+/// Connection configuration menu
 pub struct ConnectionConfigMenu;
 
 impl ToMenu for ConnectionConfigMenu {
@@ -88,6 +99,7 @@ impl FromMenu for ConnectionConfigMenu {
 
 }
 
+/// Top level action list menu
 pub struct ActionMenu;
 
 impl ToMenu for ActionMenu {
@@ -129,6 +141,7 @@ impl FromMenu for ActionMenu {
 
 }
 
+/// Create a new user menu
 pub struct NewUserMenu;
 
 pub struct NewUserMenuError {
@@ -186,6 +199,7 @@ impl FromMenu for NewUserMenu {
     }
 }
 
+/// Input a user id menu
 pub struct UserIdMenu;
 
 impl ToMenu for UserIdMenu {
@@ -224,6 +238,7 @@ impl FromMenu for UserIdMenu {
     }
 }
 
+/// Menu for creating a new match record
 pub struct MatchRecordMenu;
 
 impl ToMenu for MatchRecordMenu {
@@ -341,6 +356,7 @@ impl FromMenu for MatchRecordMenu {
     }
 }
 
+/// Menu for inputing a match record id
 pub struct MatchRecordIdMenu;
 
 impl ToMenu for MatchRecordIdMenu {
@@ -387,6 +403,7 @@ impl FromMenu for MatchRecordIdMenu {
     }
 }
 
+/// Menu for listing records
 pub struct ListRecordsMenu;
 
 impl ToMenu for ListRecordsMenu {
@@ -479,6 +496,7 @@ impl FromMenu for ListRecordsMenu {
     }
 }
 
+/// Menu for listing users
 pub struct ListUserMenu;
 
 impl ToMenu for ListUserMenu {
