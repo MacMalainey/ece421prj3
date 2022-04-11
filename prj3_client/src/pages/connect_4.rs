@@ -6,15 +6,34 @@ use crate::components::{
 };
 
 pub struct Connect4 {
+    //name of game
     name: String,
+
+    //steps for how to play game
     steps: Vec<String>,
+
+    //description for game
     description: String,
+
+    //difficulties for connect 4
     difficulties: Vec<String>,
+
+    //possible board sizes for connect 4
     board_sizes: Vec<String>,
+
+    //possible disc color options
     disc_colors: Vec<String>,
+
+    //chosen difficulty
     selected_difficulty: String,
+
+    //chosen disc color
     selected_disc_color: String,
+
+    //chosen board size
     selected_board_size: String,
+
+    //should game start
     should_start: bool,
 }
 
@@ -46,6 +65,7 @@ impl Component for Connect4 {
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
         match _msg {
+            //start button pressed
             Msg::StartPressed(selections) => {
                 self.selected_difficulty = selections[0].clone();
                 self.selected_board_size = selections[1].clone();
@@ -60,8 +80,10 @@ impl Component for Connect4 {
         let split: Vec<&str> = self.selected_board_size.split("x").collect();
         let columns = split[0].to_string();
         let rows = split[1].to_string();
+        //if game should start, show game screen otherwise show game option screen
         html! {{if self.should_start {
             html! {
+                // render game screen
                 <PlayScreen
                     name={self.name.clone()}
                     selected_difficulty = {self.selected_difficulty.clone()}
@@ -73,6 +95,7 @@ impl Component for Connect4 {
             }
         } else {
             html! {
+                // render game setup screen
                 <GameSetup
                     name = {self.name.clone()}
                     steps= {self.steps.clone()}

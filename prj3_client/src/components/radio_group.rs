@@ -2,16 +2,16 @@ use yew::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
-    pub title: String,
-    pub options: Vec<String>,
-    pub name: String,
-    pub is_discs: bool,
-    pub update: Callback<String>,
+    pub title: String, //name for group
+    pub options: Vec<String>, //vector of possible choices
+    pub name: String, //name for radio
+    pub is_discs: bool, //is disc color group
+    pub update: Callback<String>, //callback for if radio is selected
 }
 
 pub struct RadioGroup {
-    selected: String,
-    index: usize
+    selected: String, //selected radio text
+    index: usize //selected radio index
 }
 
 pub enum Msg {
@@ -31,11 +31,16 @@ impl Component for RadioGroup {
 
     fn update(&mut self, ctx: &Context<Self>, _msg: Self::Message) -> bool {
         match _msg {
+            //when a radio is selected in the group
             Msg::RadioSelected(i) => {
                 let opt = ctx.props().options.clone();
                 let selected_str = opt[i].clone();
+
+                //set new selected string and index
                 self.selected = selected_str;
                 self.index = i;
+
+                //send selected string to parent component
                 let update = ctx.props().update.clone();
                 update.emit(self.selected.clone());
                 true
@@ -55,8 +60,9 @@ impl Component for RadioGroup {
                     {title}
                 </div>
                 <div class="control mb-6">
+                    //radio group
                     <label class="radio">
-                        {
+                        {   //render disc group
                             if is_discs {
                                 options.iter().enumerate().map(|(i, option)| {
                                     html!{
@@ -72,7 +78,8 @@ impl Component for RadioGroup {
                                         </span>
                                     }
                                 }).collect::<Html>()
-                            } else {                                
+                            } else {
+                                //render radio options
                                 options.iter().enumerate().map(|(i, option)| {
                                 html!{
                                     <span class="mx-2 is-size-6">

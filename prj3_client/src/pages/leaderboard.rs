@@ -8,13 +8,8 @@ use crate::mutations::match_records::{MatchRecordQuery, MatchRecordQueryOptions}
 
 #[derive(PartialEq)]
 struct LeaderboardState {
-    isOnConnect4: bool,
+    is_on_connect_4: bool,
     error: Option<String>,
-}
-
-pub enum Msg {
-    SwitchToConnect,
-    SwitchToToot
 }
 
 /// Login page component
@@ -22,14 +17,14 @@ pub enum Msg {
 pub fn leaderboard() -> Html {
     // Get state
     let state = use_state_eq(|| LeaderboardState {
-        isOnConnect4: true,
+        is_on_connect_4: true,
         error: None
     });
 
     let should_refresh_query = use_mut_ref(|| true);
 
     // Get the option to filter the game
-    let game_filter = if state.isOnConnect4 {
+    let game_filter = if state.is_on_connect_4 {
         GameType::Connect4
     } else {
         GameType::OttoToot
@@ -46,6 +41,7 @@ pub fn leaderboard() -> Html {
         Some(Ok(query)) if !srq => {
             let records: &Records<MatchRecord> = &query.0; // Left the type in to make it easy to identify what it is
             let x = &records.records;
+            //render each leaderboard record
             x.iter().enumerate().map(|(i, record)| {
                 log::info!("{:#?}", record);
                 let level;
@@ -101,30 +97,31 @@ pub fn leaderboard() -> Html {
     let mut connect_class = "is-active";
     let mut toot_class = "";
 
-    if !state.isOnConnect4 {
+    if !state.is_on_connect_4 {
         connect_class = "";
         toot_class = "is-active";
     }
-    // Callback for switching to register
+    // Callback for switching to toot leaderboard
     let switch_to_toot = {
         let state = state.clone();
         let should_refresh_query = should_refresh_query.clone();
         Callback::from(move |_| {
             *should_refresh_query.borrow_mut() = true;
             state.set(LeaderboardState {
-                isOnConnect4: false,
+                is_on_connect_4: false,
                 error: None
             })
         })
     };
 
+    // Callback for switching to connect 4 leaderboard
     let switch_to_connect = {
         let state = state.clone();
         let should_refresh_query = should_refresh_query.clone();
         Callback::from(move |_| {
             *should_refresh_query.borrow_mut() = true;
             state.set(LeaderboardState {
-                isOnConnect4: true,
+                is_on_connect_4: true,
                 error: None
             })
         })
@@ -133,7 +130,7 @@ pub fn leaderboard() -> Html {
     html! {
             <div class="container mt-6" style={"max-width:500px;"}>
                 {
-                    if state.isOnConnect4 {
+                    if state.is_on_connect_4 {
                         html! {
                             <h1 class="title has-text-centered mt-6">{"Connect 4 Leaderboard"}</h1>
                         }

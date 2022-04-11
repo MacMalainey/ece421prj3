@@ -158,6 +158,7 @@ pub fn login() -> Html {
     html! {
         <div class="container is-max-desktop center-form">
             <h1 class="title has-text-centered mt-6">{"Boardgames"}</h1>
+            //login and signup tab
             <div class="tabs mt-6">
                 <ul>
                 <li class={login_class} onclick={switch_to_login}>
@@ -168,6 +169,7 @@ pub fn login() -> Html {
                 </li>
                 </ul>
             </div>
+            //username and password forms
             <form onsubmit={submit_form} oninput={on_form_input}>
                 <div class="field mt-4">
                     <label class="label">{"Username"}</label>

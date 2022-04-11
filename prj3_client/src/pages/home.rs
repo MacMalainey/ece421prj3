@@ -31,6 +31,7 @@ impl Component for Home {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
             <div class="tile is-ancestor is-vertical">
+                //title
                 <div class="tile is-child hero">
                     <div class="hero-body container pb-0">
                         <h1 class="title has-text-centered is-2">{ "Bored?" }</h1>
@@ -38,10 +39,12 @@ impl Component for Home {
                     </div>
                 </div>
 
+                //render banner
                 <div class="tile is-child">
                         <img alt="banner for homepage." src="assets/home_banner1.jpg" />
                 </div>
 
+                //render game cards
                 <div class="tile is-parent container">
                     { self.game_cards() }
                 </div>
@@ -53,8 +56,12 @@ impl Home {
     fn game_cards(&self) -> Html {
         html! {
             <div style={"width:800px; margin-bottom: 80px"}>
+                //games title
                 <div class="title">{ "Games" }</div>
+
+                //render cards
                 <div>
+                    //render connect 4 card
                     <div class="tile is-parent" style={"display:inline-block;  width: 300px"}>
                         <div class="tile is-child box" style={"padding-right: 30px; padding-left: 30px;"}>
                             <p class="subtitle has-text-centered">{ "Connect 4" }</p>
@@ -65,6 +72,7 @@ impl Home {
                         </div>
                     </div>
 
+                    //render Toot otto card
                     <div class="tile is-parent" style={"display:inline-block; width: 300px"}>
                         <div class="tile is-child box" style={"padding-right: 30px; padding-left: 30px;"}>
                             <p class="subtitle has-text-centered">{ "TOOT and OTTO" }</p>

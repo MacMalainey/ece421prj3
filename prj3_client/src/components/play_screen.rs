@@ -57,7 +57,6 @@ struct BoardUpdateCallbackFactory {
 }
 
 impl BoardUpdateCallbackFactory {
-
     /// Whether or not the game is finished
     fn is_game_finished(&self) -> bool {
         self.game.borrow().get_state() != GameState::Running
@@ -189,7 +188,6 @@ pub fn play_screen(props: &Props) -> Html {
     // Callback for selecting t
     let on_t_selected = {
         let state = state.clone();
-        let props = props.clone();
         let game = game.clone();
         Callback::from(move |_| {
             state.set(PlayScreenState {
@@ -203,7 +201,6 @@ pub fn play_screen(props: &Props) -> Html {
     // Callback for selecting o
     let on_o_selected = {
         let state = state.clone();
-        let props = props.clone();
         let game = game.clone();
         Callback::from(move |_| {
             state.set(PlayScreenState {
@@ -222,19 +219,22 @@ pub fn play_screen(props: &Props) -> Html {
         <div class="container" style="max-width:650px">
             <h1 class="title has-text-centered mt-6">{name}</h1>
             <div class="mt-6">
+                //p1 name and color
                 <div class="in-game-player-info">
                     <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + &selected_color.to_string()}/>
                     <div style={""}>{p1}</div>
                 </div>
+                //p2 name and color
                 <div class="in-game-player-info">
                     <div style={"height: 15px; width: 15px; border-radius: 50%; background-color:".to_string() + get_opponent_color(selected_color.to_string(), is_toot_and_otto)}/>
                     <div style={""}>{p2}</div>
                 </div>
-                {
+                {   //if toot and otto, show T and O selection radios
                     if props.name.clone() != "Connect 4".to_string() {
                         html! {
                             <div class="in-game-player-info ml-5" style={"float:right"}>
                                 <div>{"Select letter: "}</div>
+                                    //T radio
                                     <span class="mx-2 is-size-6">
                                         <input
                                             class="color-1 mr-2"
@@ -244,6 +244,7 @@ pub fn play_screen(props: &Props) -> Html {
                                             />
                                         {"T"}
                                     </span>
+                                    //O radio
                                     <span class="mx-2 is-size-6">
                                         <input
                                             class="color-1 mr-2"
@@ -376,6 +377,7 @@ fn get_opponent_color(selected_disc_color: String, is_same: bool) -> &'static st
 
 /// Renders the board game grid
 fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, selected_disc_color: String, name: String) -> Html {
+    //get game type toot and otto or connect 4
     let game_type = get_game_type(name.as_str());
     let is_toot_and_otto = game_type == GameType::OttoToot;
 
@@ -386,6 +388,7 @@ fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, sel
         <>
             <div class={"background-3 grid-container grid_cols_".to_string() + &cols.to_string()}>
                 {
+                    //render p1 circle pieces and letter
                     board_state.into_iter().map(|(piece, letter)| {
                         if piece == 1 {
                             html!{
@@ -396,6 +399,7 @@ fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, sel
                                 </div>
                             }
                         }
+                        //render p2 circle pieces and letter
                         else if piece == 2 {
                             html! {
                                 <div class="grid-item">
@@ -404,6 +408,7 @@ fn render_grid(selected_board_size: String, board_state: Vec<(i32, String)>, sel
                                     </div>
                                 </div>
                             }
+                        //render white circle pieces
                         } else {
                                 html!{
                                 <div class="grid-item">
